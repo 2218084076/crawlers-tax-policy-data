@@ -1,0 +1,11 @@
+# log
+LOG_PATH: '/tmp/atom'
+LOGLEVEL: INFO
+
+# 商品信息存储位置
+MONGODB_URL: mongodb://127.0.0.1:27017/
+MONGODB_NAME: 'customs_data'
+
+REDIS_URL: redis://127.0.0.1:6379/0
+
+HEADLESS: True
