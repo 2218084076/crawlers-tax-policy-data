@@ -2,6 +2,20 @@
 
 ## 采集数据格式
 
+```json
+{
+  "link": "",
+  "title": "",
+  "editor": "",
+  "state": "",
+  "date": "",
+  "tax_type": "",
+  "text": "",
+  "appendix": "",
+  "related_documents": ""
+}
+```
+
 - link 链接
 - title 标题
 - editor 文号
@@ -11,6 +25,7 @@
 - text 正文
 - appendix 附件（链接下载） 注：多个链接时使用 ` /` 分号分割
 - related documents 相关文件（链接） 注：多个链接时使用 ` /` 分号分割
+
 
 ![img.png](img.png)
 
