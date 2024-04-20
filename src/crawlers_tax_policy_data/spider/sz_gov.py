@@ -3,15 +3,20 @@ https://www.sz.gov.cn/cn/xxgk/zfxxgj/tzgg/index.html
 """
 import logging
 
-import httpx
+from urllib3.exceptions import InsecureRequestWarning
+from urllib3 import disable_warnings
+
+import requests
 from lxml import etree
+
+disable_warnings(InsecureRequestWarning)
 
 
 class SZGovSpider:
 
     def __init__(self):
         self.logger = logging.getLogger(f'{__name__}.{self.__class__.__name__}')
-        self.sz_gov_url = 'https://www.sz.gov.cn/cn/xxgk/zfxxgj/tzgg/index.html'
+        self.sz_gov_url = 'https://www.sz.gov.cn/cn/xxgk/zfxxgj/tzgg/'
         self.headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,'
                       '*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -20,15 +25,14 @@ class SZGovSpider:
                           'Chrome/124.0.0.0 Safari/537.36'
         }
 
-    async def get_list(self, start_date: str, end_date: str):
+    def get_list(self, start_date: str, end_date: str):
         """
         get list
         :param start_date:
         :param end_date:
         :return:
         """
-        async with httpx.AsyncClient() as client:
-            respo = await client.get(self.sz_gov_url)
+        respo = requests.get(url=self.sz_gov_url, headers=self.headers, verify=False)
         self.logger.info('get list sz_gov %s', respo.status_code)
         res = self.parse(respo.text, start_date, end_date)
 
