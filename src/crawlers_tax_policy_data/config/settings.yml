@@ -8,4 +8,6 @@ MONGODB_NAME: 'customs_data'
 
 REDIS_URL: redis://127.0.0.1:6379/0
 
-HEADLESS: True
+HEADLESS: False
+
+GOV_OUTPUT_PAHT: "/foo"

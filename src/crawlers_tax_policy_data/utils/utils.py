@@ -11,11 +11,10 @@ def date_obj(date_str: str):
     return date_object
 
 
-def parse_timestamp(timestamp:str):
+def parse_timestamp(timestamp):
     """
     Convert the timestamp string to a datetime object
     :param timestamp:
     :return:
     """
     date_time = datetime.fromtimestamp(timestamp)
-
