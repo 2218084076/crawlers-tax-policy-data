@@ -1,13 +1,15 @@
 # log
-LOG_PATH: '/tmp/atom'
+LOG_PATH: '/crawlers'
 LOGLEVEL: INFO
-
+#
 # 商品信息存储位置
-MONGODB_URL: mongodb://127.0.0.1:27017/
-MONGODB_NAME: 'customs_data'
+#MONGODB_URL: mongodb://127.0.0.1:27017/
+#MONGODB_NAME: 'customs_data'
+#
+#REDIS_URL: redis://127.0.0.1:6379/0
 
-REDIS_URL: redis://127.0.0.1:6379/0
-
-HEADLESS: False
+HEADLESS: True
 
 GOV_OUTPUT_PAHT: "/foo"
+
+CRAWLERS_DATE: 20240412

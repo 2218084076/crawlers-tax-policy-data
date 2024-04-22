@@ -50,35 +50,24 @@ class GovSpider(BaseSpider):
                 "childrenInfoIds": [[1108, 1107, 1106, 1105, 1104, 1103, 1102, 7547, 7548, 7549, 1101, "1100"]],
                 "pageSize": 20, "pageNo": 1}
 
-    # 列表每行
-    # //*[@id="xxgkzn_list_tbody_ID"]//tr
-
-    # def get_list(self):
-    #     """
-    #     get list page
-    #     :return:
-    #     """
-    #     repo = self.get_req(url=self.url, headers=self.headers)
-    #     self.logger.info('get %s,%s', self.url, repo)
-    #     self.parse_list(repo.text)
-
-    def get_news(self, check_date: str):
+    def get_news(self):
         """
         post request the data
 
         Parse according to the specified date
         cookies are valid for 30 minutes
-        :param check_date:
         :return:
         """
+        check_date = settings.CRAWLERS_DATE
         check_date_obj = date_obj(check_date)
         self.sync_init_page()
         self.page.goto(self.url)
+        check_date = f'{check_date_obj.year}年{int(check_date_obj.month):02d}月{int(check_date_obj.day):02d}日'
         time.sleep(0.5)
         self.logger.info('post %s,%s', self.url, self.page)
         # All details page links to be crawled
         detail_pages = self.parse_list(
-            check_date=f'{check_date_obj.year}年{int(check_date_obj.month):02d}月{int(check_date_obj.day):02d}日'
+            check_date=check_date
         )
 
         self.page.close()
@@ -90,17 +79,19 @@ class GovSpider(BaseSpider):
                 headers=self.headers,
             )
             repo.encoding = 'utf-8'  # fix garbled characters in requests
-            self.logger.info('get %s %s,%s', _page.get('title'), _page, repo)
+            self.logger.info('get %s', _page)
             detail_data = self.parse_detail_page(repo.text)
             current_news_data = {}
             current_news_data.update({
-                'link': '_page.get("link")',
+                'link': _page.get("link"),
                 'title': detail_data['info'][detail_data['info'].index('标\u3000\u3000题：') + 1],
                 'editor': detail_data['info'][detail_data['info'].index('发文字号：') + 1],
                 'date': detail_data['info'][detail_data['info'].index('发布日期：') + 1],
-                'text': detail_data.get('text'),
+                'text': detail_data.get('text').replace('\u3000', ' '),
+                'related_documents': detail_data.get('related_documents'),
+                'appendix': ''
             })
-            self.logger.info(current_news_data)
+            self.logger.debug(current_news_data)
             save_data(
                 content=current_news_data,
                 file_path=Path(
@@ -114,20 +105,37 @@ class GovSpider(BaseSpider):
         :return:
         """
         res = []
+
+        def parse_news_items(items):
+            """ Helper function to parse news items """
+            for item in items:
+                _page_date = item.locator('td').nth(-1).text_content()
+                self.page.wait_for_timeout(500)
+                if _page_date == check_date:
+                    _title = item.locator('a').text_content()
+                    _link = item.locator('a').get_attribute('href')
+                    res.append({'title': _title, 'link': _link})
+                    self.logger.info(f'Added news item: {_title}')
+
+        # Initial parse of news items
         all_news = self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
-        self.logger.info('parse text contents')
-        for item in all_news:
-            _page_date = item.locator('td').nth(-1).text_content()
-            time.sleep(0.5)
-            if _page_date == check_date:
-                _title = item.locator('a').text_content()
-                _link = item.locator('a').get_attribute('href')
-                res.append({'title': _title, 'link': _link})
+        self.logger.info('Parsing text contents for the first page')
+        parse_news_items(all_news)
+
+        # Check if pagination is needed and execute
+        if all_news and all_news[-1].locator('td').nth(-1).text_content() == check_date:
+            self.page.locator('//*[@id="newPage"]/div[1]/div[8]').click()
+            self.page.wait_for_timeout(500)  # Simulating waiting for page to load
+            all_news = self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
+            self.logger.info('Parsing text contents for the next page')
+            parse_news_items(all_news)
+
         return res
 
     def parse_detail_page(self, html_text: str):
         """
         parse detail page
+
         :param html_text:
         :return:
         """
@@ -142,17 +150,31 @@ class GovSpider(BaseSpider):
                     data.append(d.text)
                 else:
                     data.append(''.join(d.xpath('b/text()')))
-
+        # 正文
         text = [
             p.text if p.text is not None else ' '.join(p.xpath('strong/text()'))
             for p in html.xpath('//div[@class="trs_editor_view TRS_UEDITOR trs_paper_default trs_web"]')[0].findall('p')
         ]
-        res.update({'text': ''.join(text), 'info': data})
+        # 相关链接
+        related_documents_li = html.xpath('//ul[@class="jiedu_list bt13"]//li')
+        related_documents = []
+        for li in related_documents_li:
+            _title = ''.join(li.xpath('a/text()'))
+            _link = ''.join(li.xpath('a/@href'))
+            related_documents.append(f'{_title} {_link}')
 
-        #                 'appendix': '',
-        #                 'related_documents': item.get('sourceUrl'),
-        # TODO: 实现附件和相关链接的解析
+        res.update({
+            'text': ''.join(text),
+            'info': data,
+            'related_documents': ','.join(related_documents),
+            'appendix': ''
+        })
 
         return res
 
-# TODO: 实现读写文件通用类
+    def run(self):
+        """
+        run crawlers
+        :return:
+        """
+        self.get_news()

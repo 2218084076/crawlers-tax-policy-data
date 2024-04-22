@@ -3,11 +3,10 @@ https://www.sz.gov.cn/cn/xxgk/zfxxgj/tzgg/index.html
 """
 import logging
 
-from urllib3.exceptions import InsecureRequestWarning
-from urllib3 import disable_warnings
-
 import requests
 from lxml import etree
+from urllib3 import disable_warnings
+from urllib3.exceptions import InsecureRequestWarning
 
 disable_warnings(InsecureRequestWarning)
 

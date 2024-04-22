@@ -1,10 +1,15 @@
 [tool.poetry]
 name = "crawlers-tax-policy-data"
 version = "0.1.0"
-description = ""
-authors = ["terry <terry@ppx.asia>"]
+description = "Get the specified field data of public announcements in the government affairs platform"
+authors = ["Terry <17601306065@163.com>"]
 readme = "README.md"
-packages = [{include = "crawlers_tax_policy_data", from = "src"}]
+packages = [{ include = "crawlers_tax_policy_data", from = "src" }]
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "default"
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -12,15 +17,17 @@ dynaconf = "^3.2.5"
 pandas = "^2.2.2"
 pymongo = "^4.6.3"
 aioredis = "^2.0.1"
-playwright = "^1.43.0"
+playwright = "^1.43.0" # `playwright install` (Please run the following command to download new browsers)
 requests = "^2.31.0"
 beautifulsoup4 = "^4.12.3"
 lxml = "^5.2.1"
 openpyxl = "^3.1.2"
 httpx = "^0.27.0"
+click = "^8.1.7"
 
 
 [tool.poetry.group.dev.dependencies]
+# User the `--group dev` argument add development dependency
 pytest = "^8.1.1"
 isort = "^5.13.2"
 pytest-asyncio = "^0.23.6"
@@ -30,3 +37,5 @@ pytest-mock = "^3.14.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+max-line-length = 130
