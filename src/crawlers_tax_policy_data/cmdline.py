@@ -44,6 +44,9 @@ def crawlers_gov(city):
 
     sz-gov
     [深圳政府在线](https://www.sz.gov.cn/cn/xxgk/zfxxgj/zcfg/szsfg/index.html)
+
+    pudong-gov
+    [上海市浦东新区人民政府](https://www.pudong.gov.cn/)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()
