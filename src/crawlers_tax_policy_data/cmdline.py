@@ -2,12 +2,13 @@
 """
 Cmdline.
 """
+import asyncio
 
 import click
 
 from crawlers_tax_policy_data import __version__
 from crawlers_tax_policy_data.config import settings
-from crawlers_tax_policy_data.manage import crawlers_factory
+from crawlers_tax_policy_data.manage import crawlers_factory, all_crawlers
 from crawlers_tax_policy_data.utils.log import init_log
 
 init_log()
@@ -41,9 +42,20 @@ def crawlers_gov(city):
     gov
     [中央人民政府](www.gov.cn/zhengce/xxgk/)
 
+    sz-gov
+    [深圳政府在线](https://www.sz.gov.cn/cn/xxgk/zfxxgj/zcfg/szsfg/index.html)
     ----------------------------------------------------------------
     """
-    crawlers_factory(city).run()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(crawlers_factory(city).run())
+
+
+@main.command()
+def run_all():
+    """
+    并发执行所有爬虫实例
+    """
+    asyncio.run(all_crawlers())
 
 
 if __name__ == '__main__':

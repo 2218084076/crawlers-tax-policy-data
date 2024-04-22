@@ -8,8 +8,13 @@ LOGLEVEL: INFO
 #
 #REDIS_URL: redis://127.0.0.1:6379/0
 
+# 浏览器无头模式,
 HEADLESS: True
 
-GOV_OUTPUT_PAHT: "/foo"
+# [中央人民政府](www.gov.cn/zhengce/xxgk/) 网站数据保存路径
+GOV_OUTPUT_PAHT: "/crawlers"
 
-CRAWLERS_DATE: 20240412
+# 需要采集的日期，
+# 注：日期格式要按照 `年月日` 的形式 例如 `20240409` 程序中已定义了固定的 date 解析逻辑
+# 错误示范：2024-01-12、2024年1月2日
+CRAWLERS_DATE: '20240409'

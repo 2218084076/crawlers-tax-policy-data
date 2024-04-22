@@ -59,7 +59,6 @@
 
 本地部署时，建议使用使用本地配置，替换项目默认配置，
 配置方法如下：
-
 - 可按照 [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
   文件格式，在其同级（即与 [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
   同级路径）创建 `settings.local.yml` 文件

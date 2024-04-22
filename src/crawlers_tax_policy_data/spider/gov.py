@@ -50,7 +50,7 @@ class GovSpider(BaseSpider):
                 "childrenInfoIds": [[1108, 1107, 1106, 1105, 1104, 1103, 1102, 7547, 7548, 7549, 1101, "1100"]],
                 "pageSize": 20, "pageNo": 1}
 
-    def get_news(self):
+    async def get_news(self):
         """
         post request the data
 
@@ -60,21 +60,20 @@ class GovSpider(BaseSpider):
         """
         check_date = settings.CRAWLERS_DATE
         check_date_obj = date_obj(check_date)
-        self.sync_init_page()
-        self.page.goto(self.url)
+        await self.init_page()
+        await self.page.goto(self.url)
         check_date = f'{check_date_obj.year}年{int(check_date_obj.month):02d}月{int(check_date_obj.day):02d}日'
         time.sleep(0.5)
-        self.logger.info('post %s,%s', self.url, self.page)
+        self.logger.info('post %s', self.page)
         # All details page links to be crawled
-        detail_pages = self.parse_list(
+        detail_pages = await self.parse_list(
             check_date=check_date
         )
 
-        self.page.close()
-        self.browser.close()
+        await self.stop_page()
 
         for _page in detail_pages:
-            repo = self.get_req(
+            repo = await self.async_get_req(
                 url=_page.get('link'),
                 headers=self.headers,
             )
@@ -91,14 +90,14 @@ class GovSpider(BaseSpider):
                 'related_documents': detail_data.get('related_documents'),
                 'appendix': ''
             })
-            self.logger.debug(current_news_data)
+            self.logger.debug('Details page content parsing complete')
             save_data(
                 content=current_news_data,
                 file_path=Path(
                     settings.GOV_OUTPUT_PAHT) / 'www.gov.cn-zhengce-xxgk' / f'{check_date}-public-information.csv'
             )
 
-    def parse_list(self, check_date: str) -> list:
+    async def parse_list(self, check_date: str) -> list:
         """
         parse list page
         :param check_date:
@@ -106,29 +105,29 @@ class GovSpider(BaseSpider):
         """
         res = []
 
-        def parse_news_items(items):
+        async def parse_news_items(items):
             """ Helper function to parse news items """
             for item in items:
-                _page_date = item.locator('td').nth(-1).text_content()
-                self.page.wait_for_timeout(500)
+                _page_date = await item.locator('td').nth(-1).text_content()
+                await self.page.wait_for_timeout(500)
                 if _page_date == check_date:
-                    _title = item.locator('a').text_content()
-                    _link = item.locator('a').get_attribute('href')
+                    _title = await item.locator('a').text_content()
+                    _link = await item.locator('a').get_attribute('href')
                     res.append({'title': _title, 'link': _link})
                     self.logger.info(f'Added news item: {_title}')
 
         # Initial parse of news items
-        all_news = self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
+        all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
         self.logger.info('Parsing text contents for the first page')
-        parse_news_items(all_news)
+        await parse_news_items(all_news)
 
         # Check if pagination is needed and execute
-        if all_news and all_news[-1].locator('td').nth(-1).text_content() == check_date:
-            self.page.locator('//*[@id="newPage"]/div[1]/div[8]').click()
-            self.page.wait_for_timeout(500)  # Simulating waiting for page to load
-            all_news = self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
+        if all_news and await all_news[-1].locator('td').nth(-1).text_content() == check_date:
+            await self.page.locator('//*[@id="newPage"]/div[1]/div[8]').click()
+            await self.page.wait_for_timeout(500)  # Simulating waiting for page to load
+            all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
             self.logger.info('Parsing text contents for the next page')
-            parse_news_items(all_news)
+            await parse_news_items(all_news)
 
         return res
 
@@ -172,9 +171,9 @@ class GovSpider(BaseSpider):
 
         return res
 
-    def run(self):
+    async def run(self):
         """
         run crawlers
         :return:
         """
-        self.get_news()
+        await self.get_news()

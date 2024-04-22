@@ -78,7 +78,7 @@ class BaseSpider:
         self.logger.info('use async request get %s', url)
         async with httpx.AsyncClient() as client:
             repo = await client.get(url=url, **kwargs)
-            return repo
+        return repo
 
     def sync_init_page(self):
         p = sync_playwright().start()
