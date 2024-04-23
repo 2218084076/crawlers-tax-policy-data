@@ -98,11 +98,11 @@ Commands:
 ```bash
 Usage: cmdline.py crawlers-gov [OPTIONS]
 
-  政府网站爬虫,请使用 `crawlers-gov --help` 获取详细说明
+  政府网站爬虫，请使用 `crawlers-gov --help` 获取详细说明
 
-  下列是可提供的采集方案： 请使用 -c 或 --city 参数指定爬虫,
+  下列是可提供的采集方案： 请使用 -c 或 --city 参数指定爬虫，
 
-  并在 config/settings `START_DATE`和`END_DATE` 中确认需要采集的日期,默认采集当日的数据
+  并在 config/settings `START_DATE`和`END_DATE` 中确认需要采集的日期，默认采集当日的数据
 
   ----------------------------------------------------------------
 
@@ -113,12 +113,13 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   sh-gov [上海市人民政府](www.shanghai.gov.cn)
 
   zj-gov [浙江省人民政府](www.zj.gov.cn)
+
+  gd-gov-latest-policy [广东省政府-最新政策](www.gd.gov.cn/gdywdt)
   ----------------------------------------------------------------
 
 Options:
   -c, --city TEXT  选择要采集的网站  [default: gov]
   --help           Show this message and exit.
-
 ```
 
 例如:

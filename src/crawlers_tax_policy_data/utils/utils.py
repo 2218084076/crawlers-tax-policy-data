@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
 import re
 from datetime import datetime
+
+pattern = r'^\S+〔\d+〕\d+号$'
 
 
 def date_obj(date_str: str):
@@ -29,3 +32,7 @@ def clean_text(text):
     """
     text = re.sub(r'[\xa0\u3000\n\t]+', ' ', text)
     return text.strip()
+
+
+def is_match(text):
+    return bool(re.match(pattern, text))

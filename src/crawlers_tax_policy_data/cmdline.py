@@ -52,6 +52,9 @@ def crawlers_gov(city):
 
     zj-gov
     [浙江省人民政府](www.zj.gov.cn)
+
+    gd-gov-latest-policy
+    [广东省政府-最新政策](www.gd.gov.cn/gdywdt)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()

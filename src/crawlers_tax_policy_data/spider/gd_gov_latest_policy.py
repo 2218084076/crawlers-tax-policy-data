@@ -1,3 +1,8 @@
+"""
+广东省人民政府
+`首页 > 要闻动态 > 政务专题 > 聚焦粤港澳大湾区建设发展 > 最新政策 ` 数据采集
+http://www.gd.gov.cn/gdywdt/zwzt/ygadwq/zxzc/index.html
+"""
 import asyncio
 import re
 from datetime import datetime
@@ -8,12 +13,13 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import clean_text
+from crawlers_tax_policy_data.utils.utils import clean_text, pattern
 
 
-class ZJSpider(BaseSpider):
-    """zhejiang gov Spider"""
-    pattern = r'^\S+〔\d+〕\d+号$'
+class GdGovLatestPolicySpider(BaseSpider):
+    """
+    广东省人民政府 `首页 > 政务公开 > 文件库 ` 数据采集
+    """
 
     @property
     def url(self):
@@ -21,7 +27,7 @@ class ZJSpider(BaseSpider):
         url
         :return:
         """
-        return 'https://www.zj.gov.cn/col/col1229697826/index.html'
+        return 'http://www.gd.gov.cn/gdywdt/zwzt/ygadwq/zxzc/index.html?version=slh'
 
     @property
     def headers(self):
@@ -92,8 +98,9 @@ class ZJSpider(BaseSpider):
 
             save_data(
                 content=detail_data,
-                file_path=Path(settings.GOV_OUTPUT_PAHT) / 'zj.gov.cn' / f'{start_date}-{end_date}-public'
-                                                                         f'-information.csv'
+                file_path=Path(
+                    settings.GOV_OUTPUT_PAHT) / 'gd.gov.cn' / 'Latest policy' / f'{start_date}-{end_date}-public'
+                                                                                f'-information.csv'
             )
             await asyncio.sleep(0.5)
         await self.stop_page()
@@ -116,7 +123,7 @@ class ZJSpider(BaseSpider):
             :return:
             """
             for row in all_row:
-                _page_date = clean_text(''.join(row.xpath('./span[@class="xzgfx_list_title5"]/text()')))
+                _page_date = clean_text(''.join(row.xpath('./span[3]/text()')))
                 _date = datetime.strptime(
                     _page_date,
                     '%Y-%m-%d'
@@ -125,26 +132,25 @@ class ZJSpider(BaseSpider):
                         <= _date
                         <= datetime.strptime(end_date, '%Y-%m-%d').date()
                 ):
-                    _title = clean_text(''.join(row.xpath('./span[@class="xzgfx_list_title2"]/a/text()')))
-                    _link = 'https://www.zj.gov.cn' + clean_text(
-                        ''.join(row.xpath('./span[@class="xzgfx_list_title2"]/a/@href')))
+                    _title = clean_text(''.join(row.xpath('./span/a/text()')))
+                    _link = clean_text(''.join(row.xpath('./span/a/@href')))
                     res.append({'title': _title, 'link': _link, 'date': _page_date})
 
-        items_list = html.xpath('//div[@class="xzgfx_list_item cf"]')
+        items_list = html.xpath('//div[@class="viewList"]/ul//li')[1:]
         parse_news_items(items_list)
 
-        last_item_date_str = clean_text(''.join(items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()')))
+        last_item_date_str = clean_text(''.join(items_list[-1].xpath('./span[3]/text()')))
         last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
 
         while last_item_date >= datetime.strptime(start_date, '%Y-%m-%d').date():
-            await self.page.locator('//a[@class="simple_pgBtn simple_pgNext"]').click()
+            await self.page.locator('//a[@class="next"]').click()
             await self.page.wait_for_timeout(400)
             page_text = await self.page.content()
             next_html = etree.HTML(page_text, etree.HTMLParser(encoding="utf-8"))
-            next_items_list = next_html.xpath('//div[@class="xzgfx_list_item cf"]')
+            next_items_list = next_html.xpath('//div[@class="viewList"]/ul//li')[1:]
             parse_news_items(next_items_list)
 
-            last_item_date_str = ''.join(next_items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()'))
+            last_item_date_str = ''.join(next_items_list[-1].xpath('./span[3]/text()'))
             last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
 
         await self.stop_page()
@@ -162,26 +168,17 @@ class ZJSpider(BaseSpider):
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-        title = clean_text(''.join(html.xpath('//td[@class="wzbt"]/text()')))
+        title = clean_text(''.join(html.xpath('//div[@class="viewList"]/h3/text()')))
         # 文号
-        editor = clean_text(''.join(html.xpath('//tr[@class="xxgk-info-wh"]/td[1]/text()'))) if self.is_match(
-            clean_text(''.join(html.xpath('//tr[@class="xxgk-info-wh"]/td[1]/text()')))) else ''
+        editor = next((
+            i.text.strip() for i in html.xpath('//div[@wzades="正文"]//p') if
+            i.text and re.match(pattern, i.text.strip())), ''
+        )
 
-        state = clean_text(''.join(html.xpath('//table[@class="xxgk"]//tr[4]/td/text()')))
-
-        related_documents = ''
         res.update({
             'title': title,
-            'text': title + clean_text(''.join(html.xpath('//div[@id="zoom"]//p/text()'))),
+            'text': title + clean_text(''.join(html.xpath('//div[@wzades="正文"]//p//text()'))),
             'editor': editor,
-            'state': state,
-            # 附件
-            'appendix': ','.join([
-                clean_text(''.join(a.xpath('./text()'))) + ' - https://www.zj.gov.cn' + clean_text(
-                    ''.join(a.xpath('@href')))
-                for a in html.xpath('//div[@id="zoom"]//p')[-1].xpath('.//a')
-            ]),
-            'related_documents': related_documents,
         })
 
         return res
@@ -193,6 +190,3 @@ class ZJSpider(BaseSpider):
         """
         self.logger.info('start running crawlers...')
         await self.get_public_info()
-
-    def is_match(self, text):
-        return bool(re.match(self.pattern, text))
