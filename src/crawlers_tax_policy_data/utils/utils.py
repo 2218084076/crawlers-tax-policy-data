@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 
@@ -18,3 +19,13 @@ def parse_timestamp(timestamp):
     :return:
     """
     date_time = datetime.fromtimestamp(timestamp)
+
+
+def clean_text(text):
+    """
+    Used to clean and standardize extracted text
+    :param text:
+    :return:
+    """
+    text = re.sub(r'[\xa0\u3000\n\t]+', ' ', text)
+    return text.strip()

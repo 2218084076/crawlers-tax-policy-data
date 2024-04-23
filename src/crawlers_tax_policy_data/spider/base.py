@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import httpx
 import playwright
@@ -7,13 +8,47 @@ from playwright.async_api import async_playwright
 from playwright.sync_api import sync_playwright
 
 from crawlers_tax_policy_data.config import settings
+from crawlers_tax_policy_data.utils.utils import date_obj
 
 
 class BaseSpider:
     def __init__(self):
+        self.now_date = None
         self.browser: playwright.sync_api._generated.Browser | playwright.async_api._generated.Browser | None = None
         self.page: playwright.sync_api._generated.Page | playwright.async_api._generated.Page | None = None
         self.logger = logging.getLogger(f'{__name__}.{self.__class__.__name__}')
+
+    @property
+    def date(self):
+        """
+        Determine the crawler crawl date
+
+        If the data start date and end date are specified in the configuration,
+        the dates in the configuration will be used.
+
+        If not specified, the current date is calculated as the page data date
+        :return:
+        """
+        self.now_date = datetime.now()
+        crawlers_start_date = settings.START_DATE
+        crawlers_end_date = settings.END_DATE
+
+        if crawlers_start_date:
+            start_date = date_obj(crawlers_start_date)
+        else:
+            start_date = self.now_date
+
+        if crawlers_end_date:
+            end_date = date_obj(crawlers_end_date)
+        else:
+            end_date = start_date
+
+        if start_date == end_date:
+            self.logger.info('Use the single date <%s> for crawling', start_date)
+            return start_date
+        else:
+            self.logger.info('Use the date range <%s-%s> for crawling', start_date, end_date)
+            return {'start': start_date, 'end': end_date}
 
     @staticmethod
     def queue_name():
@@ -101,3 +136,11 @@ class BaseSpider:
         """
         await self.page.close()
         await self.browser.close()
+
+    @property
+    def check_date(self):
+        """
+        check date
+        :return:
+        """
+        raise NotImplementedError()

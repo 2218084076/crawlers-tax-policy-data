@@ -8,7 +8,7 @@ import click
 
 from crawlers_tax_policy_data import __version__
 from crawlers_tax_policy_data.config import settings
-from crawlers_tax_policy_data.manage import crawlers_factory, all_crawlers
+from crawlers_tax_policy_data.manage import all_crawlers, crawlers_factory
 from crawlers_tax_policy_data.utils.log import init_log
 
 init_log()

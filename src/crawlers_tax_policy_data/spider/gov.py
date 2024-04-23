@@ -1,5 +1,4 @@
-# encoding:utf-8
-import time
+from datetime import datetime
 from pathlib import Path
 
 from lxml import etree
@@ -7,7 +6,6 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import date_obj
 
 
 class GovSpider(BaseSpider):
@@ -58,19 +56,27 @@ class GovSpider(BaseSpider):
         cookies are valid for 30 minutes
         :return:
         """
-        check_date = settings.CRAWLERS_DATE
-        check_date_obj = date_obj(check_date)
+        check_date = self.date
+        if isinstance(check_date, dict):
+            start_date = f'{check_date["start"].year}年{int(check_date["start"].month):02d}月{int(check_date["start"].day):02d}日'
+            end_date = f'{check_date["end"].year}年{int(check_date["end"].month):02d}月{int(check_date["end"].day):02d}日'
+        else:
+            start_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
+            end_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
+
         await self.init_page()
         await self.page.goto(self.url)
-        check_date = f'{check_date_obj.year}年{int(check_date_obj.month):02d}月{int(check_date_obj.day):02d}日'
-        time.sleep(0.5)
+        await self.page.wait_for_timeout(400)
         self.logger.info('post %s', self.page)
         # All details page links to be crawled
         detail_pages = await self.parse_list(
-            check_date=check_date
+            start_date=start_date,
+            end_date=end_date
         )
-
         await self.stop_page()
+        if not detail_pages:
+            self.logger.info('<%s> no data', check_date)
+            return []
 
         for _page in detail_pages:
             repo = await self.async_get_req(
@@ -90,17 +96,19 @@ class GovSpider(BaseSpider):
                 'related_documents': detail_data.get('related_documents'),
                 'appendix': ''
             })
-            self.logger.debug('Details page content parsing complete')
             save_data(
                 content=current_news_data,
                 file_path=Path(
-                    settings.GOV_OUTPUT_PAHT) / 'www.gov.cn-zhengce-xxgk' / f'{check_date}-public-information.csv'
+                    settings.GOV_OUTPUT_PAHT) / 'www.gov.cn-zhengce-xxgk' / f'{start_date}-{end_date}-public'
+                                                                            f'-information.csv'
             )
+        self.logger.debug('Details page content parsing complete %s', self.url)
 
-    async def parse_list(self, check_date: str) -> list:
+    async def parse_list(self, start_date: str, end_date: str) -> list:
         """
         parse list page
-        :param check_date:
+        :param start_date: Start date in 'YYYY年MM月DD日' format
+        :param end_date: End date in 'YYYY年MM月DD日' format
         :return:
         """
         res = []
@@ -108,26 +116,40 @@ class GovSpider(BaseSpider):
         async def parse_news_items(items):
             """ Helper function to parse news items """
             for item in items:
-                _page_date = await item.locator('td').nth(-1).text_content()
-                await self.page.wait_for_timeout(500)
-                if _page_date == check_date:
+                _page_date_str = await item.locator('td').nth(-1).text_content()
+                _page_date = datetime.strptime(
+                    _page_date_str,
+                    '%Y年%m月%d日'
+                ).date()
+                await self.page.wait_for_timeout(400)
+                if (datetime.strptime(start_date, '%Y年%m月%d日').date()
+                        <= _page_date
+                        <= datetime.strptime(end_date, '%Y年%m月%d日').date()
+                ):
                     _title = await item.locator('a').text_content()
                     _link = await item.locator('a').get_attribute('href')
                     res.append({'title': _title, 'link': _link})
-                    self.logger.info(f'Added news item: {_title}')
+                    self.logger.debug(f'Added news item: {_title} on {_page_date_str}')
 
         # Initial parse of news items
         all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
         self.logger.info('Parsing text contents for the first page')
         await parse_news_items(all_news)
 
-        # Check if pagination is needed and execute
-        if all_news and await all_news[-1].locator('td').nth(-1).text_content() == check_date:
+        # Implementing pagination if needed, check the last news date if pagination is required
+        last_news_date_str = await all_news[-1].locator('td').nth(-1).text_content()
+        last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
+
+        while last_news_date >= datetime.strptime(start_date, '%Y年%m月%d日').date():
+            # Check if pagination is needed based on the date of the last news item
             await self.page.locator('//*[@id="newPage"]/div[1]/div[8]').click()
-            await self.page.wait_for_timeout(500)  # Simulating waiting for page to load
+            self.logger.info('Check next page, Get more %s', self.page)
+            await self.page.wait_for_timeout(400)
             all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
             self.logger.info('Parsing text contents for the next page')
             await parse_news_items(all_news)
+            last_news_date_str = await all_news[-1].locator('td').nth(-1).text_content()
+            last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
 
         return res
 

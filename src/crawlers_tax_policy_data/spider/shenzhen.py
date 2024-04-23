@@ -4,6 +4,7 @@ shenzhen gov crawlers
 https://www.sz.gov.cn/cn/xxgk/zfxxgj/zcfg/szsfg/index.html
 """
 import re
+from datetime import datetime
 from pathlib import Path
 
 from lxml import etree
@@ -11,7 +12,7 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import date_obj
+from crawlers_tax_policy_data.utils.utils import clean_text
 
 
 class ShenZhengSpider(BaseSpider):
@@ -63,17 +64,26 @@ class ShenZhengSpider(BaseSpider):
         get news
         :return:
         """
-        check_date = settings.CRAWLERS_DATE
-        check_date_obj = date_obj(check_date)
-        check_page_date = f'{check_date_obj.year}年{int(check_date_obj.month):02d}月{int(check_date_obj.day):02d}日'
+        check_date = self.date
+        if isinstance(check_date, dict):
+            start_date = f'{check_date["start"].year}年{int(check_date["start"].month):02d}月{int(check_date["start"].day):02d}日'
+            end_date = f'{check_date["end"].year}年{int(check_date["end"].month):02d}月{int(check_date["end"].day):02d}日'
+        else:
+            start_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
+            end_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
+
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(400)
         html_text = await self.page.content()
-        list_page_data = await self.parse_news_list(html_text, check_page_date)
+        list_page_data = await self.parse_news_list(
+            html_text=html_text,
+            start_date=start_date,
+            end_date=end_date
+        )
 
         if not list_page_data:
-            self.logger.warning('%s, No new articles have been updated on the current date', check_page_date)
+            self.logger.warning('<%s> no data', check_date)
             return ''
 
         self.logger.info('%s article has been updated', len(list_page_data))
@@ -86,11 +96,13 @@ class ShenZhengSpider(BaseSpider):
             detail_data.update({'link': _link})
             save_data(
                 content=detail_data,
-                file_path=Path(settings.GOV_OUTPUT_PAHT) / self.folder / f'{check_page_date}-public-information.csv'
+                file_path=Path(
+                    settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}-public-information.csv'
             )
+        self.logger.debug('Details page content parsing complete %s',self.url)
         await self.stop_page()
 
-    async def parse_news_list(self, html_text: str, check_date: str):
+    async def parse_news_list(self, html_text: str, start_date: str, end_date: str):
         res = []
         self.logger.info('parse news list pages')
 
@@ -102,7 +114,14 @@ class ShenZhengSpider(BaseSpider):
             """
             for li in all_li:
                 _date = li.xpath('./span[2]/text()')[0]
-                if _date == check_date:
+                _page_date = datetime.strptime(
+                    _date,
+                    '%Y年%m月%d日'
+                ).date()
+                if (datetime.strptime(start_date, '%Y年%m月%d日').date()
+                        <= _page_date
+                        <= datetime.strptime(end_date, '%Y年%m月%d日').date()
+                ):
                     _title = li.xpath('./div[@class="list_name"]/a/text()')[0]
                     _link = li.xpath('./div[@class="list_name"]/a/@href')[0]
                     res.append({'title': _title, 'link': _link})
@@ -110,14 +129,20 @@ class ShenZhengSpider(BaseSpider):
         html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))
         li_list = html.xpath('//div[@class="zx_ml_list"]//li')[1:]
         parse_news_items(li_list)
-        if li_list and li_list[-1].xpath('./span[2]/text()')[0] == check_date:
+
+        last_news_date_str = li_list[-1].xpath('./span[2]/text()')[0]
+        last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
+        while last_news_date >= datetime.strptime(start_date, '%Y年%m月%d日').date():
             await self.page.locator('//a[@class="next"]').click()
-            self.logger.debug('Check next page, Get more')
+            self.logger.info('Check next page, Get more %s',self.page)
             await self.page.wait_for_timeout(400)
             next_html_text = await self.page.content()
             next_html = etree.HTML(next_html_text, etree.HTMLParser(encoding="utf-8"))
             next_li_list = next_html.xpath('//div[@class="zx_ml_list"]//li')[1:]
             parse_news_items(next_li_list)
+
+            last_news_date_str = next_li_list[-1].xpath('./span[2]/text()')[0]
+            last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
 
         return res
 
@@ -155,12 +180,3 @@ class ShenZhengSpider(BaseSpider):
         await self.get_news()
 
 
-def clean_text(text):
-    """
-    Used to clean and standardize extracted text
-    :param text:
-    :return:
-    """
-    # 使用正则表达式替换空白字符和其他不需要的字符
-    text = re.sub(r'[\u3000\n\t]+', ' ', text)
-    return text.strip()

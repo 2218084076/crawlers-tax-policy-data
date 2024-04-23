@@ -1,6 +1,7 @@
 import asyncio
 
 from crawlers_tax_policy_data.spider.gov import GovSpider
+from crawlers_tax_policy_data.spider.shanghai_gov import ShangHaiGovSpider
 from crawlers_tax_policy_data.spider.shenzhen import ShenZhengSpider
 
 
@@ -12,7 +13,8 @@ def crawlers_factory(city):
     """
     crawlers = {
         "gov": GovSpider,
-        'sz-gov': ShenZhengSpider
+        'sz-gov': ShenZhengSpider,
+        'shanghai-gov': ShangHaiGovSpider
     }
     return crawlers.get(city, lambda: None)()
 

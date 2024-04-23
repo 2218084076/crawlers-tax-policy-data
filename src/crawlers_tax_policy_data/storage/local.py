@@ -1,5 +1,8 @@
 # encoding:utf-8
 import csv
+import logging
+
+logger = logging.getLogger(f'{__name__}')
 
 
 def save_data(content: dict, file_path):
@@ -30,3 +33,4 @@ def save_data(content: dict, file_path):
             content.get('appendix'),
             content.get('related_documents'),
         ])
+        logger.info('<%s> Write to file %s', content['title'], file_path)
