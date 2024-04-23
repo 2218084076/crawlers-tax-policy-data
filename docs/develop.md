@@ -57,16 +57,30 @@
 
 > 本项目使用 `dynaconf` 来实现动态配置
 
-本地部署时, 建议使用使用本地配置, 替换项目默认配置, 
-配置方法如下: 
+本地部署时, 建议使用使用本地配置, 替换项目默认配置,
+配置方法如下:
+
 - 可按照 [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
   文件格式, 在其同级（即与 [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
   同级路径）创建 `settings.local.yml` 文件
 - `settings.local.yml` 文件会自动替换掉 [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
   中默认配置, 并且会被 `git ignore` 不会被 git 提交到远程仓库
-- 
+-
 
 ## 使用指南
+
+- **运行爬虫前请确认 [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml) 配置文件的 `START_DATE`
+  和 `END_DATE` 参数是否为您想要采集的日期**
+- 默认 `START_DATE` 和 `END_DATE` 两个参数为空, 即为从当前日期开始采集,
+  参数说明如下：
+
+```yaml
+# 需要采集的日期，
+# 注：日期格式要按照 `年月日` 的形式 例如 `20240409` 程序中已定义了固定的 date 解析逻辑
+# 错误示范：2024-01-12、2024年1月2日
+# 要想指定采集某天单日的数据，则只需指定 start_date 或者 end_date
+# start_date 和 end_date 都设置为空，则自动采集当前日期内数据
+```
 
 ```bash
 python .\src\crawlers_tax_policy_data\cmdline.py
@@ -80,28 +94,35 @@ Options:
 Commands:
   crawlers-gov  政府网站爬虫, 请使用 `crawlers_gov --help` 获取详细说明
 ```
-```bash
-python .\src\crawlers_tax_policy_data\cmdline.py crawlers-gov --help
 
+```bash
 Usage: cmdline.py crawlers-gov [OPTIONS]
 
-  政府网站爬虫, 请使用 `crawlers-gov --help` 获取详细说明
+  政府网站爬虫,请使用 `crawlers-gov --help` 获取详细说明
 
-  下列是可提供的采集方案:  请使用 -c 或 --city 参数指定爬虫, 并在 config/settings `CRAWLERS_DATE`
-  中设置需要采集的日期
+  下列是可提供的采集方案： 请使用 -c 或 --city 参数指定爬虫,
+
+  并在 config/settings `START_DATE`和`END_DATE` 中确认需要采集的日期,默认采集当日的数据
 
   ----------------------------------------------------------------
 
-  gov [中央人民政府](www.gov.cn/zhengce/xxgk/)
+  gov [中央人民政府](www.gov.cn)
 
+  sz-gov [深圳政府在线](www.sz.gov.cn)
+
+  sh-gov [上海市人民政府](www.shanghai.gov.cn)
+
+  zj-gov [浙江省人民政府](www.zj.gov.cn)
   ----------------------------------------------------------------
 
 Options:
   -c, --city TEXT  选择要采集的网站  [default: gov]
   --help           Show this message and exit.
+
 ```
 
-例如: 
+例如:
+
 ```bash
 # 采集 [中央人民政府](www.gov.cn/zhengce/xxgk/) 网站数据
 python .\src\crawlers_tax_policy_data\cmdline.py crawlers-gov -c gov
