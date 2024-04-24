@@ -74,6 +74,7 @@ class ZJSpider(BaseSpider):
                          (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
+        await self.page.wait_for_timeout(400)
         self.logger.info('get %s', self.page)
         detail_pages = await self.parse_news_list(start_date=start_date, end_date=end_date)
 
@@ -86,6 +87,7 @@ class ZJSpider(BaseSpider):
             _link = _p.get('link')
             await self.init_page()
             await self.page.goto(_link)
+            await self.page.wait_for_timeout(400)
             html_text = await self.page.content()
             detail_data = self.parse_detail_page(html_text)
             self.logger.info('get %s ', self.page)
@@ -145,7 +147,8 @@ class ZJSpider(BaseSpider):
             next_items_list = next_html.xpath('//div[@class="xzgfx_list_item cf"]')
             parse_news_items(next_items_list)
 
-            last_item_date_str = ''.join(next_items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()'))
+            last_item_date_str = clean_text(
+                ''.join(next_items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()')))
             last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
 
         await self.stop_page()

@@ -33,4 +33,4 @@ def save_data(content: dict, file_path):
             content.get('appendix'),
             content.get('related_documents'),
         ])
-        logger.info('<%s> Write to file %s', content['title'], file_path)
+        logger.info('%s Write to file %s', content['title'], file_path)

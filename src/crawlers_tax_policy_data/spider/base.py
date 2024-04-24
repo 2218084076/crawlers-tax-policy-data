@@ -17,6 +17,7 @@ class BaseSpider:
         self.browser: playwright.sync_api._generated.Browser | playwright.async_api._generated.Browser | None = None
         self.page: playwright.sync_api._generated.Page | playwright.async_api._generated.Page | None = None
         self.logger = logging.getLogger(f'{__name__}.{self.__class__.__name__}')
+        self.file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt']
 
     @property
     def date(self):
@@ -128,7 +129,7 @@ class BaseSpider:
         :return:
         """
         p = await async_playwright().start()
-        self.browser = await p.chromium.launch(headless=settings.HEADLESS)
+        self.browser = await p.webkit.launch(headless=settings.HEADLESS)
         self.page = await self.browser.new_page()
 
     async def stop_page(self):
@@ -146,3 +147,22 @@ class BaseSpider:
         :return:
         """
         raise NotImplementedError()
+
+    def build_file_xpath(self):
+        """
+        Generate an XPath query string based on a list of file types
+        :return:
+        """
+        return " or ".join(
+            [f"substring(@href, string-length(@href) - string-length('{ft}') + 1) = '{ft}'" for ft in self.file_types]
+        )
+
+    @staticmethod
+    def extract_links(html, xpath):
+        """
+        Extract the links according to the given XPath
+        :param html:
+        :param xpath:
+        :return:
+        """
+        return [''.join(link.xpath('./text()')) + ' ' + ''.join(link.xpath('@href')) for link in html.xpath(xpath)]

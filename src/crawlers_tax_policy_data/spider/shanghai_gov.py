@@ -71,6 +71,7 @@ class ShangHaiGovSpider(BaseSpider):
                          '上海市人民政府 https://www.shanghai.gov.cn/nw12344/index.html', (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
+        await self.page.wait_for_timeout(350)
         self.logger.info('get %s', self.page)
         detail_pages = await self.parse_news_list(start_date=start_date, end_date=end_date)
 
@@ -82,8 +83,8 @@ class ShangHaiGovSpider(BaseSpider):
             _link = _p.get('link')
             await self.init_page()
             await self.page.goto(url=_link)
-            # repo = await self.async_get_req(url=_link, headers=self.headers)
-            # repo.encoding = 'utf-8'
+            await self.page.wait_for_timeout(350)
+
             html_text = await self.page.content()
             detail_data = self.parse_detail_page(html_text)
             self.logger.info('get %s ', self.page)
@@ -121,8 +122,7 @@ class ShangHaiGovSpider(BaseSpider):
                 ).date()
                 if (datetime.strptime(start_date, '%Y-%m-%d').date()
                         <= _date
-                        <= datetime.strptime(end_date, '%Y-%m-%d').date()
-                ):
+                        <= datetime.strptime(end_date, '%Y-%m-%d').date()):
                     _title = ''.join(li.xpath('./a/text()'))
                     _link = f'https://www.shanghai.gov.cn{"".join(li.xpath("./a[1]/@href"))}'
                     res.append({'title': _title, 'link': _link, 'date': _page_date})
@@ -135,7 +135,7 @@ class ShangHaiGovSpider(BaseSpider):
 
         while last_item_date >= datetime.strptime(start_date, '%Y-%m-%d').date():
             await self.page.locator('//div[@name="whj_nextPage"]').click()
-            await self.page.wait_for_timeout(400)
+            await self.page.wait_for_timeout(350)
             page_text = await self.page.content()
             next_html = etree.HTML(page_text, etree.HTMLParser(encoding="utf-8"))
             next_items_list = next_html.xpath('//ul[@class="tadaty-list uli14 nowrapli list-date"]//li')
@@ -155,6 +155,10 @@ class ShangHaiGovSpider(BaseSpider):
         """
         res = {}
         self.logger.info('parse detail_page text data')
+
+        file_xpath = self.build_file_xpath()
+        xpath_query = f'//a[{file_xpath}]'
+
         html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))  # fix garbled characters in requests
         title = clean_text(''.join(html.xpath('//div[@id="ivs_title"]/text()')))
         # 文号
@@ -168,13 +172,12 @@ class ShangHaiGovSpider(BaseSpider):
                 html.xpath('//div[@class="newsbox"]/ul//li')]
         )
         # 附件
-        appendix_link = clean_text(''.join(html.xpath('//a[@class="Gover-file0301"]/@href')))
-        appendix = 'https://www.shanghai.gov.cn/{}'.format(appendix_link) if appendix_link else ''
+        all_appendix = self.extract_links(html, xpath_query)
         res.update({
             'title': title,
-            'text': title + clean_text(''.join(html.xpath('//div[@class="news_cont_d_wrap"]//text()'))),
+            'text': title + clean_text(''.join(html.xpath('//div[@id="xggj"]//text()'))),
             'editor': editor,
-            'appendix': appendix,
+            'appendix': ','.join(all_appendix).replace('\xa0', ''),
             'related_documents': related_documents,
         })
 
@@ -190,3 +193,16 @@ class ShangHaiGovSpider(BaseSpider):
 
     def is_match(self, text):
         return bool(re.match(self.pattern, text))
+
+    @staticmethod
+    def extract_links(html, xpath):
+        """
+        Extract the links according to the given XPath
+        :param html:
+        :param xpath:
+        :return:
+        """
+        res = [''.join(link.xpath('./text()')).strip() + ' https://www.shanghai.gov.cn' + ''.join(
+            link.xpath('@href')).strip() for link
+               in html.xpath(xpath)]
+        return list(set(res))

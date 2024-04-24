@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from pathlib import Path
 
@@ -63,13 +64,11 @@ class GovSpider(BaseSpider):
         else:
             start_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
             end_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
-        self.logger.info('Start collecting `%s` <%s> data', '中央人民政府 https://www.gov.cn/zhengce/xxgk/',
+        self.logger.info('Start collecting `%s` %s data', '中央人民政府 https://www.gov.cn/zhengce/xxgk/',
                          (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(400)
-        self.logger.info('post %s', self.page)
-        # All details page links to be crawled
         detail_pages = await self.parse_list(
             start_date=start_date,
             end_date=end_date
@@ -84,9 +83,11 @@ class GovSpider(BaseSpider):
                 url=_page.get('link'),
                 headers=self.headers,
             )
-            repo.encoding = 'utf-8'  # fix garbled characters in requests
-            self.logger.info('get %s', _page)
+            repo.encoding = 'utf-8'
+            self.logger.info('parse detail page %s', repo.url)
+
             detail_data = self.parse_detail_page(repo.text)
+
             current_news_data = {}
             current_news_data.update({
                 'link': _page.get("link"),
@@ -130,27 +131,25 @@ class GovSpider(BaseSpider):
                     _title = await item.locator('a').text_content()
                     _link = await item.locator('a').get_attribute('href')
                     res.append({'title': _title, 'link': _link})
-                    self.logger.info(f'Added news item: {_title} on {_page_date_str}')
+                    self.logger.debug(f'Added news item: {_title} on {_page_date_str}')
 
-        # Initial parse of news items
+        await asyncio.sleep(3)
         all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
         self.logger.info('Parsing text contents for the first page')
         await parse_news_items(all_news)
-
-        # Implementing pagination if needed, check the last news date if pagination is required
-        last_news_date_str = await all_news[-1].locator('td').nth(-1).text_content()
-        last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
-
-        while last_news_date >= datetime.strptime(start_date, '%Y年%m月%d日').date():
-            # Check if pagination is needed based on the date of the last news item
-            await self.page.locator('//*[@id="newPage"]/div[1]/div[8]').click()
-            self.logger.info('Check next page, Get more %s', self.page)
-            await self.page.wait_for_timeout(400)
-            all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
-            self.logger.info('Parsing text contents for the next page')
-            await parse_news_items(all_news)
+        if all_news:
             last_news_date_str = await all_news[-1].locator('td').nth(-1).text_content()
             last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
+
+            while last_news_date >= datetime.strptime(start_date, '%Y年%m月%d日').date():
+                await self.page.locator('//*[@id="newPage"]/div[1]/div[8]').click()
+                self.logger.info('Check next page, Get more %s', self.page)
+                await self.page.wait_for_timeout(400)
+                all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
+                self.logger.info('Parsing text contents for the next page')
+                await parse_news_items(all_news)
+                last_news_date_str = await all_news[-1].locator('td').nth(-1).text_content()
+                last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
 
         return res
 
@@ -162,10 +161,14 @@ class GovSpider(BaseSpider):
         :return:
         """
         res = {}
-        self.logger.info('parse detail_page text data')
+        self.logger.debug('parse detail_page text data')
         html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))  # fix garbled characters in requests
         tr_list = html.xpath('//tbody')[1].findall('tr')
         data = []
+
+        file_xpath = self.build_file_xpath()
+        xpath_query = f'//a[{file_xpath}]'
+
         for tr in tr_list:
             for d in tr.findall('td'):
                 if d.text is not None:
@@ -185,11 +188,13 @@ class GovSpider(BaseSpider):
             _link = ''.join(li.xpath('a/@href'))
             related_documents.append(f'{_title} {_link}')
 
+        all_appendix = self.extract_links(html, xpath_query)
+
         res.update({
             'text': ''.join(text),
             'info': data,
             'related_documents': ','.join(related_documents),
-            'appendix': ''
+            'appendix': ','.join(all_appendix).replace('\xa0', ''),
         })
 
         return res
