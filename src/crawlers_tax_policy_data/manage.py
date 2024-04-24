@@ -4,6 +4,7 @@ from crawlers_tax_policy_data.spider.gd_gov_doc_lib import GdGovDocLibSpider
 from crawlers_tax_policy_data.spider.gd_gov_latest_policy import \
     GdGovLatestPolicySpider
 from crawlers_tax_policy_data.spider.gov import GovSpider
+from crawlers_tax_policy_data.spider.gz_gov import GzGovSpider
 from crawlers_tax_policy_data.spider.shanghai_gov import ShangHaiGovSpider
 from crawlers_tax_policy_data.spider.shenzhen import ShenZhengSpider
 from crawlers_tax_policy_data.spider.zhejiang_gov import ZJSpider
@@ -21,7 +22,8 @@ def crawlers_factory(city):
         'sh-gov': ShangHaiGovSpider,
         'zj-gov': ZJSpider,
         'gd-gov-latest-policy': GdGovLatestPolicySpider,
-        'gd-gov-doc-lib': GdGovDocLibSpider
+        'gd-gov-doc-lib': GdGovDocLibSpider,
+        'gz-gov': GzGovSpider
     }
     return crawlers.get(city, lambda: None)()
 

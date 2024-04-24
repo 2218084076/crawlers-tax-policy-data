@@ -79,15 +79,17 @@ class BaseSpider:
         self.logger.info('use sync request get %s', url)
         return requests.get(url=url, **kwargs)
 
-    def post_req(self, url: str, **kwargs):
+    async def post_req(self, url: str, **kwargs):
         """
         post requests
         :param url:
         :param kwargs:
         :return:
         """
-        self.logger.info('use sync request poet %s', url)
-        return requests.post(url=url, **kwargs)
+        self.logger.info('use async request post %s', url)
+        async with httpx.AsyncClient() as client:
+            repo = await client.post(url=url, **kwargs)
+        return repo
 
     def get_cookies(self, url: str):
         """
