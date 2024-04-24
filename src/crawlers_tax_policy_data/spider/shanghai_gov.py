@@ -1,4 +1,3 @@
-import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +11,6 @@ from crawlers_tax_policy_data.utils.utils import clean_text
 
 
 class ShangHaiGovSpider(BaseSpider):
-    pattern = r'^\S+〔\d+〕\d+号$'
     """shanghai gov Spider"""
 
     @property
@@ -190,9 +188,6 @@ class ShangHaiGovSpider(BaseSpider):
         """
         self.logger.info('start running crawlers...')
         await self.get_public_info()
-
-    def is_match(self, text):
-        return bool(re.match(self.pattern, text))
 
     @staticmethod
     def extract_links(html, xpath):

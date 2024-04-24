@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import datetime
 
 import httpx
@@ -18,6 +19,7 @@ class BaseSpider:
         self.page: playwright.sync_api._generated.Page | playwright.async_api._generated.Page | None = None
         self.logger = logging.getLogger(f'{__name__}.{self.__class__.__name__}')
         self.file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt']
+        self.pattern = r'^\S+〔\d+〕\d+号$'
 
     @property
     def date(self):
@@ -45,10 +47,8 @@ class BaseSpider:
             end_date = start_date
 
         if start_date == end_date:
-            self.logger.info('Use the single date <%s> for crawling', start_date)
             return start_date
         else:
-            self.logger.info('Use the date range <%s-%s> for crawling', start_date, end_date)
             return {'start': start_date, 'end': end_date}
 
     @staticmethod
@@ -166,3 +166,10 @@ class BaseSpider:
         :return:
         """
         return [''.join(link.xpath('./text()')) + ' ' + ''.join(link.xpath('@href')) for link in html.xpath(xpath)]
+
+    def is_match(self, text):
+        if not text:
+            return False
+        if '其他文件' in text:
+            return 1
+        return bool(re.match(self.pattern, text))

@@ -1,6 +1,8 @@
 """
 江苏省人民政府 > 政府文件及解读
+              > 规章行政规范性文件
 http://www.jiangsu.gov.cn/col/col76841/index.html
+http://www.jiangsu.gov.cn/col/col76556/index.html
 """
 import asyncio
 from datetime import datetime
@@ -21,8 +23,6 @@ class JsGovSpider(BaseSpider):
 
     def __init__(self):
         super().__init__()
-        self.status_xpath = '//span[@id="file_status"]/following-sibling::text()'
-        self.title_xpath = '//h1[@class="info_title"]/text()'
         self.text_xpath = '//div[@class="info_cont word"]/p//span//text()'
 
     @property
@@ -41,8 +41,11 @@ class JsGovSpider(BaseSpider):
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
             "Cache-Control": "max-age=0",
             "Connection": "keep-alive",
-            "Cookie": "__jsluid_h=39756ea1fafaa02d0b3a03353fe0d282; zh_choose_1=s; arialoadData=true; ariawapChangeViewPort=false; d7d579b9-386c-482a-b971-92cad6721901=WyIzNzc1Mzg2MTI0Il0",
+            "Cookie": "__jsluid_h=39756ea1fafaa02d0b3a03353fe0d282; zh_choose_1=s; arialoadData=true; ariawapChangeViewPort=false; d7d579b9-386c-482a-b971-92cad6721901=WyI0MjIyMDUwNDUiXQ",
             "Host": "www.jiangsu.gov.cn",
+            "If-Modified-Since": "Thu, 01 Feb 2024 03:54:02 GMT",
+            "If-None-Match": "W/\"65bb15da-39f6\"",
+            "Upgrade-Insecure-Requests": "1",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         }
 
@@ -61,52 +64,67 @@ class JsGovSpider(BaseSpider):
             end_date = f'{check_date.year}-{int(check_date.month):02d}-{int(check_date.day):02d}'
         return start_date, end_date
 
-    async def get_gdi(self):
+    async def collect_data(self, arrd=False):
         """
-        get Government documents and interpretation
+        General method to collect data, parameterized to differentiate between GDI and ARRD.
+        :param arrd: Boolean, if True it handles ARRD, else handles GDI.
         :return:
         """
-        start_date, end_date = self.check_date
-        self.logger.info('Start collecting `%s` <%s> data', '江苏省人民政府 政府文件及解读', (start_date, end_date))
+        doc_type = 'ARRD' if arrd else 'GDI'
+        col_index = 'col76705' if arrd else 'col76841'
+        url = f'{self.url}{col_index}/index.html'
+
         await self.init_page()
-        await self.page.goto(self.url)
+        await self.page.goto(url)
         await self.page.wait_for_timeout(400)
-        # repo = await self.async_get_req(url=self.url,headers=self.headers)
-        detail_pages = await self.parse_news_list(start_date=start_date, end_date=end_date)
+        self.logger.info(f'Start collecting {doc_type} data at {url} for dates <{self.check_date}>')
+
+        detail_pages = await self.parse_news_list(start_date=self.check_date[0], end_date=self.check_date[1])
 
         if not detail_pages:
-            self.logger.warning('广州市行政规范性文件统一发布平台  <%s> no data', (start_date, end_date))
-            return ''
+            self.logger.warning(f'No data found for {doc_type} at {url} for dates {self.check_date}')
+            return
 
         for _p in detail_pages:
             _link = _p.get('link')
-            if 'pdf' in _link:
-                save_data(
-                    content={'link': _link, 'date': _p['date'], 'title': _p['title'], 'editor': _p['editor']},
-                    file_path=Path(
-                        settings.GOV_OUTPUT_PAHT) / 'gz.gov.cn' / f'{start_date}-{end_date}-public'
-                                                                  f'-information.csv'
-                )
-            else:
-                await self.page.goto(_link)
-                repo = await self.async_get_req(
-                    url=_link,
-                    heaqders=self.headers
-                )
-                repo.encoding = 'utf-8'
-
-                self.logger.info('get 江苏省人民政府 detail_pages %s ', self.page)
-                detail_data = self.parse_detail_page(repo)
-                detail_data.update({'link': _link, 'date': _p['date']})
-
-                save_data(
-                    content=detail_data,
-                    file_path=Path(
-                        settings.GOV_OUTPUT_PAHT) / 'gz.gov.cn' / f'{start_date}-{end_date}-public'
-                                                                  f'-information.csv'
-                )
-                await asyncio.sleep(0.3)
+            output_folder = 'gz.gov.cn' if 'pdf' in _link else 'jiangsu.gov.cn'
+            await self.process_page(_p, output_folder)
         await self.stop_page()
+
+    async def process_page(self, page_data, output_folder):
+        """
+        Process individual page and save data.
+        :param page_data: Dictionary containing page details.
+        :param output_folder: Output directory.
+        :return:
+        """
+        _link = page_data.get('link')
+        if 'pdf' in _link:
+            content = {key: page_data[key] for key in ['link', 'date', 'title', 'editor']}
+        else:
+            await self.page.goto(_link)
+            self.logger.info(f'Accessing detail page {_link}')
+            content = await self.parse_detail_page()
+            content.update({key: page_data[key] for key in ['link', 'date', 'title']})
+
+        save_data(
+            content=content,
+            file_path=Path(
+                settings.GOV_OUTPUT_PAHT) / output_folder / f"{self.check_date[0]}-{self.check_date[1]}-public-information.csv"
+        )
+        await asyncio.sleep(0.3)  # Controlled delay between requests
+
+    async def get_gdi(self):
+        """
+        Get Government documents and interpretation
+        """
+        await self.collect_data(arrd=False)
+
+    async def get_arrd(self):
+        """
+        Get Administrative Rules and Regulatory Documents
+        """
+        await self.collect_data(arrd=True)
 
     async def parse_news_list(self, start_date: str, end_date: str):
         """
@@ -156,7 +174,7 @@ class JsGovSpider(BaseSpider):
 
         return res
 
-    def parse_detail_page(self, repo):
+    async def parse_detail_page(self):
         """
         parse detail page
 
@@ -169,23 +187,28 @@ class JsGovSpider(BaseSpider):
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
 
-        html_text = repo.text
+        html_text = await self.page.content()
         html = etree.HTML(
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
         file_status = self.extract_file_status(html)
-        title = self.extract_title(html)
-        all_related_links = self.extract_links(html, '//table[@id="bbsTab"]//a')
+
+        editor = next(
+            (''.join(t.xpath('./text()')) for t in html.xpath('//table[@class="xxgk_table"]//td') if
+             self.is_match(''.join(t.xpath('./text()'))))
+        )
+
+        all_related_links = self.extract_links(html, '//div[@class="right"]//a')
 
         all_appendix = self.extract_links(html, xpath_query)
 
         res.update({
-            'title': title,
-            'text': title + clean_text(' '.join(html.xpath('//div[@class="info_cont word"]/p//span//text()'))),
+            'text': clean_text(''.join(html.xpath('//div[@class="article"]/div[@class="left"]//p//text()'))),
             'related_documents': ','.join(all_related_links),
             'state': ''.join(file_status),
-            'appendix': ','.join(all_appendix).replace('\xa0', '')
+            'appendix': ','.join(all_appendix).replace('\xa0', ''),
+            'editor': editor
         })
 
         return res
@@ -215,25 +238,32 @@ class JsGovSpider(BaseSpider):
         """
         await self.page.evaluate(js_code)
 
-    def extract_title(self, html):
-        """
-        Extract page title
-        :param html:
-        :return:
-        """
-        return clean_text(''.join(html.xpath(self.title_xpath)))
-
     def extract_page_text(self, html):
         return clean_text(' '.join(html.xpath(self.text_xpath)))
 
-    def extract_file_status(self, html):
+    @staticmethod
+    def extract_file_status(html):
         """
         Extract bulletin status
         :param html:
         :return:
         """
-        status_text = ''.join(html.xpath(self.status_xpath))
-        return set(clean_text(status_text).split())
+        for i in html.xpath('//table[@class="xxgk_table"]//td'):
+            if clean_text(''.join(i.xpath('./text()'))) == "时 效：":
+                next_td_text = ''.join(i.xpath('following-sibling::td[1]/text()'))
+                return next_td_text
+        return ''
+
+    @staticmethod
+    def extract_links(html, xpath):
+        """
+        Extract the links according to the given XPath
+        :param html:
+        :param xpath:
+        :return:
+        """
+        return [f'{"".join(link.xpath("./text()"))} http://www.jiangsu.gov.cn{"".join(link.xpath("@href"))}' for link in
+                html.xpath(xpath)]
 
     async def run(self):
         """
@@ -242,3 +272,4 @@ class JsGovSpider(BaseSpider):
         """
         self.logger.info('start running crawlers...')
         await self.get_gdi()
+        await self.get_arrd()
