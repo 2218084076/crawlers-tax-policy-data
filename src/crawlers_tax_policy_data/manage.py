@@ -1,5 +1,6 @@
 import asyncio
 
+from crawlers_tax_policy_data.spider.gd_gov_doc_lib import GdGovDocLibSpider
 from crawlers_tax_policy_data.spider.gd_gov_latest_policy import \
     GdGovLatestPolicySpider
 from crawlers_tax_policy_data.spider.gov import GovSpider
@@ -19,7 +20,8 @@ def crawlers_factory(city):
         'sz-gov': ShenZhengSpider,
         'sh-gov': ShangHaiGovSpider,
         'zj-gov': ZJSpider,
-        'gd-gov-latest-policy': GdGovLatestPolicySpider
+        'gd-gov-latest-policy': GdGovLatestPolicySpider,
+        'gd-gov-doc-lib': GdGovDocLibSpider
     }
     return crawlers.get(city, lambda: None)()
 

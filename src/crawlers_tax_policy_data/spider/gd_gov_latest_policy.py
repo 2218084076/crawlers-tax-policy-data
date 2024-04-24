@@ -18,7 +18,7 @@ from crawlers_tax_policy_data.utils.utils import clean_text, pattern
 
 class GdGovLatestPolicySpider(BaseSpider):
     """
-    广东省人民政府 `首页 > 政务公开 > 文件库 ` 数据采集
+    广东省人民政府 `首页 > 要闻动态 > 政务专题 > 聚焦粤港澳大湾区建设发展 > 最新政策` 数据采集
     """
 
     @property
@@ -71,38 +71,40 @@ class GdGovLatestPolicySpider(BaseSpider):
         :return:
         """
         start_date, end_date = self.check_date
+        self.logger.info('Start collecting <%s> <%s> data', '广东省人民政府 > 最新政策', (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
         self.logger.info('get %s', self.page)
         detail_pages = await self.parse_news_list(start_date=start_date, end_date=end_date)
 
         if not detail_pages:
-            self.logger.warning('上海市人民政府 <%s> no data', (start_date, end_date))
+            self.logger.warning('广东省人民政府 > 最新政策 <%s> no data', (start_date, end_date))
             return ''
 
         for _p in detail_pages:
             _link = _p.get('link')
-            await self.init_page()
-            await self.page.goto(_link)
-            # repo = await self.async_get_req(
-            #     url=_link,
-            #     headers=self.headers,
-            # )
-            # repo.encoding = 'utf-8'  # fix garbled characters in requests
-            # repo = await self.async_get_req(url=_link, headers=self.headers)
-            # repo.encoding = 'utf-8'
-            html_text = await self.page.content()
-            detail_data = self.parse_detail_page(html_text)
-            self.logger.info('get %s ', self.page)
-            detail_data.update({'link': _link, 'date': _p['date']})
+            if 'pdf' in _link:
+                save_data(
+                    content={'link': _link, 'date': _p['date'], 'title': _p['title']},
+                    file_path=Path(
+                        settings.GOV_OUTPUT_PAHT) / 'gd.gov.cn' / 'Latest policy' / f'{start_date}-{end_date}-public'
+                                                                                    f'-information.csv'
+                )
+            else:
+                await self.init_page()
+                await self.page.goto(_link)
+                html_text = await self.page.content()
+                detail_data = self.parse_detail_page(html_text)
+                self.logger.info('get %s ', self.page)
+                detail_data.update({'link': _link, 'date': _p['date']})
 
-            save_data(
-                content=detail_data,
-                file_path=Path(
-                    settings.GOV_OUTPUT_PAHT) / 'gd.gov.cn' / 'Latest policy' / f'{start_date}-{end_date}-public'
-                                                                                f'-information.csv'
-            )
-            await asyncio.sleep(0.5)
+                save_data(
+                    content=detail_data,
+                    file_path=Path(
+                        settings.GOV_OUTPUT_PAHT) / 'gd.gov.cn' / 'Latest policy' / f'{start_date}-{end_date}-public'
+                                                                                    f'-information.csv'
+                )
+                await asyncio.sleep(0.5)
         await self.stop_page()
 
     async def parse_news_list(self, start_date: str, end_date: str):

@@ -25,11 +25,11 @@ def save_data(content: dict, file_path):
         writer.writerow([
             content['link'],
             content['title'],
-            content['editor'],
+            content.get('editor'),
             content.get('state'),
             content['date'],
             content.get('tax_type'),
-            content['text'],
+            content.get('text'),
             content.get('appendix'),
             content.get('related_documents'),
         ])
