@@ -67,6 +67,8 @@ class ShangHaiGovSpider(BaseSpider):
         :return:
         """
         start_date, end_date = self.check_date
+        self.logger.info('Start collecting `%s` <%s> data',
+                         '上海市人民政府 https://www.shanghai.gov.cn/nw12344/index.html', (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
         self.logger.info('get %s', self.page)

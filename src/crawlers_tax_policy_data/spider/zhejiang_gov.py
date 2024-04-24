@@ -1,3 +1,7 @@
+"""
+浙江省人民政府 法规政策 > 行政规范性文件 > 省政府 > 有效
+https://www.zj.gov.cn/col/col1229697826/index.html
+"""
 import asyncio
 import re
 from datetime import datetime
@@ -65,26 +69,23 @@ class ZJSpider(BaseSpider):
         :return:
         """
         start_date, end_date = self.check_date
+        self.logger.info('Start collecting `%s` <%s> data',
+                         '浙江省人民政府 法规政策 https://www.zj.gov.cn/col/col1229697826/index.html',
+                         (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
         self.logger.info('get %s', self.page)
         detail_pages = await self.parse_news_list(start_date=start_date, end_date=end_date)
 
         if not detail_pages:
-            self.logger.warning('上海市人民政府 <%s> no data', (start_date, end_date))
+            self.logger.warning('浙江省人民政府 法规政策 > 行政规范性文件 > 省政府 > 有效 <%s> no data',
+                                (start_date, end_date))
             return ''
 
         for _p in detail_pages:
             _link = _p.get('link')
             await self.init_page()
             await self.page.goto(_link)
-            # repo = await self.async_get_req(
-            #     url=_link,
-            #     headers=self.headers,
-            # )
-            # repo.encoding = 'utf-8'  # fix garbled characters in requests
-            # repo = await self.async_get_req(url=_link, headers=self.headers)
-            # repo.encoding = 'utf-8'
             html_text = await self.page.content()
             detail_data = self.parse_detail_page(html_text)
             self.logger.info('get %s ', self.page)

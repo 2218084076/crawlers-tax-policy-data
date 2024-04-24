@@ -3,7 +3,6 @@
 shenzhen gov crawlers
 https://www.sz.gov.cn/cn/xxgk/zfxxgj/zcfg/szsfg/index.html
 """
-import re
 from datetime import datetime
 from pathlib import Path
 
@@ -71,7 +70,9 @@ class ShenZhengSpider(BaseSpider):
         else:
             start_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
             end_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
-
+        self.logger.info('Start collecting `%s` <%s> data',
+                         '深圳市人民政府 https://www.sz.gov.cn/cn/xxgk/zfxxgj/zcfg/szsfg/index.html',
+                         (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(400)
@@ -99,7 +100,7 @@ class ShenZhengSpider(BaseSpider):
                 file_path=Path(
                     settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}-public-information.csv'
             )
-        self.logger.debug('Details page content parsing complete %s',self.url)
+        self.logger.debug('Details page content parsing complete %s', self.url)
         await self.stop_page()
 
     async def parse_news_list(self, html_text: str, start_date: str, end_date: str):
@@ -134,7 +135,7 @@ class ShenZhengSpider(BaseSpider):
         last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
         while last_news_date >= datetime.strptime(start_date, '%Y年%m月%d日').date():
             await self.page.locator('//a[@class="next"]').click()
-            self.logger.info('Check next page, Get more %s',self.page)
+            self.logger.info('Check next page, Get more %s', self.page)
             await self.page.wait_for_timeout(400)
             next_html_text = await self.page.content()
             next_html = etree.HTML(next_html_text, etree.HTMLParser(encoding="utf-8"))
@@ -178,5 +179,3 @@ class ShenZhengSpider(BaseSpider):
         """
         self.logger.info('start running crawlers...')
         await self.get_news()
-
-

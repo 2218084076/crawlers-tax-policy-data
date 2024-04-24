@@ -69,7 +69,7 @@ class GzGovSpider(BaseSpider):
         :return:
         """
         start_date, end_date = self.check_date
-        self.logger.info('Start collecting `%s` <%s> data', '广东省人民政府 > 文件库', (start_date, end_date))
+        self.logger.info('Start collecting `%s` <%s> data', '广州市行政规范性文件统一发布平台', (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(400)

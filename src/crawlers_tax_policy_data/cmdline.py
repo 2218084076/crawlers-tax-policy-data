@@ -32,7 +32,7 @@ def main(ctx, version, verbose):
 @click.option('-c', '--city', default='gov', show_default=True, help='选择要采集的网站')
 def crawlers_gov(city):
     """
-    政府网站爬虫，请使用 `crawlers-gov --help` 获取详细说明
+    政府网站爬虫, 请使用 `crawlers-gov --help` 获取详细说明
 
     下列是可提供的采集方案：
     请使用 -c 或 --city 参数指定爬虫，
@@ -58,6 +58,9 @@ def crawlers_gov(city):
 
     gd-gov-doc-lib
     [广东省政府 > 文件库](www.gd.gov.cn/zwgk/wjk/qbwj/)
+
+    gz-gov
+    [广州市行政规范性文件统一发布平台](www.gz.gov.cn/gfxwj/)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()
@@ -67,9 +70,10 @@ def crawlers_gov(city):
 @main.command()
 def run_all():
     """
-    并发执行所有爬虫实例
+    逐一运行每个爬虫, 请在配置文件中确认采集日期！
     """
-    asyncio.run(all_crawlers())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(all_crawlers())
 
 
 if __name__ == '__main__':

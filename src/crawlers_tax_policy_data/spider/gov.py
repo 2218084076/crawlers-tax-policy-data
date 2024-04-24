@@ -63,7 +63,8 @@ class GovSpider(BaseSpider):
         else:
             start_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
             end_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
-
+        self.logger.info('Start collecting `%s` <%s> data', '中央人民政府 https://www.gov.cn/zhengce/xxgk/',
+                         (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(400)
@@ -129,7 +130,7 @@ class GovSpider(BaseSpider):
                     _title = await item.locator('a').text_content()
                     _link = await item.locator('a').get_attribute('href')
                     res.append({'title': _title, 'link': _link})
-                    self.logger.debug(f'Added news item: {_title} on {_page_date_str}')
+                    self.logger.info(f'Added news item: {_title} on {_page_date_str}')
 
         # Initial parse of news items
         all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()

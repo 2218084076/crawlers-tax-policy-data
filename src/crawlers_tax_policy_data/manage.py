@@ -9,6 +9,16 @@ from crawlers_tax_policy_data.spider.shanghai_gov import ShangHaiGovSpider
 from crawlers_tax_policy_data.spider.shenzhen import ShenZhengSpider
 from crawlers_tax_policy_data.spider.zhejiang_gov import ZJSpider
 
+crawlers = {
+    "gov": GovSpider,
+    'sz-gov': ShenZhengSpider,
+    'sh-gov': ShangHaiGovSpider,
+    'zj-gov': ZJSpider,
+    'gd-gov-latest-policy': GdGovLatestPolicySpider,
+    'gd-gov-doc-lib': GdGovDocLibSpider,
+    'gz-gov': GzGovSpider
+}
+
 
 def crawlers_factory(city):
     """
@@ -16,24 +26,17 @@ def crawlers_factory(city):
     :param city:
     :return:
     """
-    crawlers = {
-        "gov": GovSpider,
-        'sz-gov': ShenZhengSpider,
-        'sh-gov': ShangHaiGovSpider,
-        'zj-gov': ZJSpider,
-        'gd-gov-latest-policy': GdGovLatestPolicySpider,
-        'gd-gov-doc-lib': GdGovDocLibSpider,
-        'gz-gov': GzGovSpider
-    }
     return crawlers.get(city, lambda: None)()
 
 
 async def all_crawlers():
     """
-    Asynchronously run all defined crawler instances.
-    """
-    # Create a list of all crawler instances
-    crawler_instances = [crawlers_factory(name) for name in ["gov", "sz-gov"]]
+    Sequentially run all defined crawler instances.
+    :return: 
+    """""
+    crawler_instances = [crawlers.get(name, lambda: None)() for name in crawlers.keys()]
 
-    # Use asyncio.gather to execute the run methods of all crawlers concurrently
-    await asyncio.gather(*(crawler.run() for crawler in crawler_instances if crawler))
+    for crawler in crawler_instances:
+        if crawler:
+            await crawler.run()
+            await asyncio.sleep(5)

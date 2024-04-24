@@ -92,7 +92,9 @@ Options:
   --help         Show this message and exit.
 
 Commands:
-  crawlers-gov  政府网站爬虫, 请使用 `crawlers_gov --help` 获取详细说明
+  crawlers-gov  政府网站爬虫, 请使用 `crawlers-gov --help` 获取详细说明
+  run-all       逐一运行每个爬虫, 请在配置文件中确认采集日期! 
+
 ```
 
 ```bash
@@ -117,6 +119,8 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   gd-gov-latest-policy [广东省政府 > 最新政策](www.gd.gov.cn/gdywdt)
 
   gd-gov-doc-lib [广东省政府 > 文件库](www.gd.gov.cn/zwgk/wjk/qbwj/)
+  
+  gz-gov [广州市行政规范性文件统一发布平台](www.gz.gov.cn/gfxwj/)
   ----------------------------------------------------------------
 
 Options:
@@ -129,6 +133,8 @@ Options:
 ```bash
 # 采集 [中央人民政府](www.gov.cn/zhengce/xxgk/) 网站数据
 python .\src\crawlers_tax_policy_data\cmdline.py crawlers-gov -c gov
+# 逐一运行每个爬虫
+python .\src\crawlers_tax_policy_data\cmdline.py run-all
 ```
 
 
