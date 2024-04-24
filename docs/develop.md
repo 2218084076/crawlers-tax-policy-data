@@ -27,8 +27,8 @@
 - issue date 发文日期
 - tax type 税种
 - text 正文
-- appendix 附件（链接下载） 注: 多个链接时使用 ` /` 分号分割
-- related documents 相关文件（链接） 注: 多个链接时使用 ` /` 分号分割
+- appendix 附件（链接下载）
+- related documents 相关文件（链接）
 
 ## 部署指南
 
