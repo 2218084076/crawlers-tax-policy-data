@@ -90,7 +90,7 @@ class ScGovSpider(BaseSpider):
         """
         doc_type = crawlers_category[name]
         spider_name = crawlers_name[name]
-        url = f'{self.url}{doc_type}/gfxwj.shtml'
+        url = f'{self.url}{doc_type}.shtml'
 
         repo = await self.async_get_req(
             url=url,
@@ -98,19 +98,22 @@ class ScGovSpider(BaseSpider):
         )
         repo.encoding = 'utf-8'
         self.logger.info(repo)
-
         self.logger.info(f'Start collecting {spider_name} data at {url} for dates <{self.check_date}>')
 
-        detail_pages = await self.parse_news_list(spider_name=spider_name, start_date=self.check_date[0],
-                                                  end_date=self.check_date[1])
+        detail_pages = await self.parse_news_list(
+            html_text=repo.text,
+            spider_name=name,
+            start_date=self.check_date[0],
+            end_date=self.check_date[1]
+        )
 
         if not detail_pages:
-            self.logger.warning(f'No data found for {doc_type} at {url} for dates {self.check_date}')
+            self.logger.warning(f'No data found for {spider_name} at {url} for dates {self.check_date}')
             return
 
         for _p in detail_pages:
             _link = _p.get('link')
-            output_folder = 'gz.gov.cn' if 'pdf' in _link else 'jiangsu.gov.cn'
+            output_folder = 'sc.gov.cn'
             await self.process_page(_p, output_folder)
         await self.stop_page()
 
@@ -149,16 +152,17 @@ class ScGovSpider(BaseSpider):
         """
         await self.collect_data(arrd=True)
 
-    async def parse_news_list(self, spider_name: str, start_date: str, end_date: str):
+    async def parse_news_list(self, html_text: str, spider_name: str, start_date: str, end_date: str):
         """
         parse news list
+        :param spider_name:
+        :param html_text:
         :param start_date:
         :param end_date:
         :return:
         """
         res = []
-        html_text = await self.page.content()
-        html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))
+        html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8", remove_comments=False))
 
         def parse_news_items(all_row: list):
             """
@@ -167,7 +171,7 @@ class ScGovSpider(BaseSpider):
             :return:
             """
             for row in all_row:
-                _page_date = clean_text(''.join(row.xpath('./b/text()')))
+                _page_date = clean_text(''.join(row.xpath('./div[@class="lie4"]//text()')))
                 _date = datetime.strptime(
                     _page_date,
                     '%Y-%m-%d'
@@ -175,30 +179,38 @@ class ScGovSpider(BaseSpider):
                 if (datetime.strptime(start_date, '%Y-%m-%d').date()
                         <= _date
                         <= datetime.strptime(end_date, '%Y-%m-%d').date()):
-                    _title = clean_text(''.join(row.xpath('./a/text()')))
-                    _link = clean_text(''.join(row.xpath('./a/@href')))
-                    res.append({'title': _title, 'link': _link, 'date': _page_date})
+                    _title = clean_text(''.join(row.xpath('./div[@class="lie2"]/a/text()')))
+                    _link = f'''https://www.sc.gov.cn{clean_text(''.join(row.xpath('./div[@class="lie2"]/a/@href')))}'''
+                    _editor = clean_text(''.join(row.xpath('./div[@class="lie3"]//text()')))
+                    res.append({
+                        'title': _title,
+                        'link': _link,
+                        'date': _page_date,
+                        'editor': _editor
+                    })
 
-        li_list = html.xpath('//ul[@id="gz_list"]//li')
+        li_list = html.xpath('//div[@class="biaobody"]//li')
         parse_news_items(li_list)
 
-        last_item_date_str = clean_text(''.join(li_list[-1].xpath('./b/text()')))
+        last_item_date_str = clean_text(''.join(li_list[-1].xpath('./div[@class="lie4"]//text()')))
         last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
-        # next
+
         doc_type = crawlers_category[spider_name]
-        spider_name = crawlers_name[spider_name]
-        _next_url = f'{self.url}{doc_type}/gfxwj_{2}.shtml'
-        _repo = await self.async_get_req(_next_url)
-        await self.page.locator('//a[@title="下一页"]').click()
-        await self.page.wait_for_timeout(350)
+        page_name = crawlers_name[spider_name]
+        page_num = 2
         while last_item_date >= datetime.strptime(start_date, '%Y-%m-%d').date():
-            next_html_text = await self.page.content()
-            next_html = etree.HTML(next_html_text, etree.HTMLParser(encoding="utf-8"))
-            next_items_list = next_html.xpath('//ul[@id="gz_list"]//li')
+            _next_url = f'{self.url}{doc_type}_{page_num}.shtml'
+            _repo = await self.async_get_req(_next_url)
+            self.logger.info('get next page 四川省人民政府-%s %s', spider_name, _next_url)
+            _repo.encoding = 'utf-8'
+
+            next_html = etree.HTML(_repo.text, etree.HTMLParser(encoding="utf-8"))
+            next_items_list = next_html.xpath('//div[@class="biaobody"]//li')
             parse_news_items(next_items_list)
 
-            last_item_date_str = ''.join(next_items_list[-1].xpath('./b/text()'))
+            last_item_date_str = ''.join(next_items_list[-1].xpath('./div[@class="lie4"]//text()'))
             last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
+            page_num += 1
 
         return res
 

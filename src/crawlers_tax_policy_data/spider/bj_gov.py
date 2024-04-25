@@ -14,11 +14,18 @@ from crawlers_tax_policy_data.storage.local import save_data
 from crawlers_tax_policy_data.utils.utils import clean_text
 
 
+def extract_url_base(url: str):
+    parts = url.split('/')
+    for i in range(len(parts)):
+        if len(parts[i]) == 6 and parts[i].isdigit():
+            return '/'.join(parts[:i + 1])
+    return None
+
+
 class BjGovSpider(BaseSpider):
     """
     北京市人民政府 爬虫
     """
-    file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt']
     folder = 'beijing.gov.cn'
 
     def __init__(self):
@@ -103,8 +110,8 @@ class BjGovSpider(BaseSpider):
                 )
                 detail_repo.encoding = 'utf-8'
                 _html_text = detail_repo.text
-                detail_data = await self.parse_detail_page(_html_text)
-                self.logger.info('get %s ', self.page)
+
+                detail_data = await self.parse_detail_page(html_text=_html_text, prefix=extract_url_base(_link))
                 detail_data.update({'link': _link, 'date': _p['date']})
 
                 save_data(
@@ -159,9 +166,10 @@ class BjGovSpider(BaseSpider):
 
         return res
 
-    async def parse_detail_page(self, html_text: str):
+    async def parse_detail_page(self, html_text: str, prefix: str):
         """
         parse detail page
+        :param prefix:
         :param html_text:
         :return:
         """
@@ -177,17 +185,19 @@ class BjGovSpider(BaseSpider):
         )
         file_status = self.extract_file_status(html)
         title = self.extract_title(html)
-        editor = clean_text(''.join(html.xpath('//li[@class="fwzh"]/span//text()')))
+        editor = clean_text(''.join(html.xpath('//li[@class="fwzh"]//span/text()'))).strip()
+        if editor == "〔〕号":
+            editor = "----"
         all_related_links = self.extract_links(html, '//div[@class="relevantdoc xgjd"]/ul//a')
 
-        all_appendix = self.extract_links(html, xpath_query)
+        all_appendix = list(set(extract_links(html, xpath_query, prefix)))
 
         res.update({
             'title': title,
-            'text': title + clean_text(' '.join(html.xpath('//div[@class="info_cont word"]/p//span//text()'))),
+            'text': clean_text('\n'.join(html.xpath('//div[@class="mainTextBox"]//p//text()'))),
             'related_documents': ','.join(all_related_links),
             'state': ''.join(file_status),
-            'appendix': ','.join(all_appendix).replace('\xa0', ''),
+            'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'editor': editor
         })
 
@@ -235,16 +245,6 @@ class BjGovSpider(BaseSpider):
         """
         return clean_text(''.join(html.xpath(self.title_xpath)))
 
-    @staticmethod
-    def extract_links(html, xpath):
-        """
-        Extract the links according to the given XPath
-        :param html:
-        :param xpath:
-        :return:
-        """
-        return [''.join(link.xpath('./text()')) + ' ' + ''.join(link.xpath('@href')) for link in html.xpath(xpath)]
-
     def extract_file_status(self, html):
         """
         Extract bulletin status
@@ -263,3 +263,16 @@ class BjGovSpider(BaseSpider):
         """
         self.logger.info('start running crawlers...')
         await self.get_public_info()
+
+
+def extract_links(html, xpath, prefix: str):
+    """
+    Extract the links according to the given XPath
+    :param prefix:
+    :param html:
+    :param xpath:
+    :return:
+    """
+    return [''.join(link.xpath('./text()')) + ' ' + ''.join(link.xpath('@href')).replace('./', f'{prefix}/') for
+            link in
+            html.xpath(xpath)]

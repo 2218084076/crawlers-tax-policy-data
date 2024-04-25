@@ -30,7 +30,7 @@ def clean_text(text):
     :param text:
     :return:
     """
-    text = re.sub(r'[ \u2003\xa0\u3000\n\t]+', ' ', text)
+    text = re.sub(r'[ \u2003\xa0\u3000]+', ' ', text)
     return text.strip()
 
 

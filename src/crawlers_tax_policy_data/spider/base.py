@@ -18,7 +18,7 @@ class BaseSpider:
         self.browser: playwright.sync_api._generated.Browser | playwright.async_api._generated.Browser | None = None
         self.page: playwright.sync_api._generated.Page | playwright.async_api._generated.Page | None = None
         self.logger = logging.getLogger(f'{__name__}.{self.__class__.__name__}')
-        self.file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt']
+        self.file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt','.wps']
         self.pattern = r'^\S+〔\d+〕\d+号$'
 
     @property
