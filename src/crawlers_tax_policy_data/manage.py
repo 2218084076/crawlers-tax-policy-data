@@ -7,6 +7,7 @@ from crawlers_tax_policy_data.spider.gd_gov_latest_policy import \
 from crawlers_tax_policy_data.spider.gov import GovSpider
 from crawlers_tax_policy_data.spider.gz_gov import GzGovSpider
 from crawlers_tax_policy_data.spider.js_gov import JsGovSpider
+from crawlers_tax_policy_data.spider.sc_gov import ScGovSpider
 from crawlers_tax_policy_data.spider.shanghai_gov import ShangHaiGovSpider
 from crawlers_tax_policy_data.spider.shenzhen import ShenZhengSpider
 from crawlers_tax_policy_data.spider.zhejiang_gov import ZJSpider
@@ -20,7 +21,8 @@ crawlers = {
     'gd-gov-doc-lib': GdGovDocLibSpider,
     'gz-gov': GzGovSpider,
     'js-gov': JsGovSpider,
-    'bj-gov': BjGovSpider
+    'bj-gov': BjGovSpider,
+    'sc-gov': ScGovSpider,
 }
 
 

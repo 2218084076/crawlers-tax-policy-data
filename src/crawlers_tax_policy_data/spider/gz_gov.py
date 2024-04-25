@@ -69,7 +69,9 @@ class GzGovSpider(BaseSpider):
         :return:
         """
         start_date, end_date = self.check_date
-        self.logger.info('Start collecting `%s` <%s> data', '广州市行政规范性文件统一发布平台', (start_date, end_date))
+        self.logger.info(
+            'Start collecting 广州市行政规范性文件统一发布平台 %s %s-%s data', self.url, start_date, end_date
+        )
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(400)
@@ -139,9 +141,10 @@ class GzGovSpider(BaseSpider):
 
         last_item_date_str = clean_text(''.join(lr_list[-1].xpath('./td[@class="hide"][2]/text()')))
         last_item_date = datetime.strptime(last_item_date_str, '%Y年%m月%d日').date()
-        await self.page.locator('//a[@id="next"]').click()
-        await self.page.wait_for_timeout(350)
+
         while last_item_date >= datetime.strptime(start_date, '%Y年%m月%d日').date():
+            await self.page.locator('//a[@id="next"]').click()
+            await self.page.wait_for_timeout(350)
             next_html_text = await self.page.content()
             next_html = etree.HTML(next_html_text, etree.HTMLParser(encoding="utf-8"))
             next_items_list = next_html.xpath('//table[@id="bbsTab"]//tr')[1:]

@@ -1,8 +1,8 @@
 """
-江苏省人民政府 > 政府文件及解读
-              > 规章行政规范性文件
-http://www.jiangsu.gov.cn/col/col76841/index.html
-http://www.jiangsu.gov.cn/col/col76556/index.html > http://www.jiangsu.gov.cn/col/col76705/index.html
+四川省人民政府
+https://www.sc.gov.cn/10462/c102914/gfxwj.shtml	政府规范性文件
+https://www.sc.gov.cn/10462/c103041/newzfwj.shtml 省政府政策文件
+https://www.sc.gov.cn/10462/c111304/bmgfxwj.shtml?lion=1 政府信息公开
 """
 import asyncio
 from datetime import datetime
@@ -15,10 +15,23 @@ from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
 from crawlers_tax_policy_data.utils.utils import clean_text
 
+# gfxwj 规范文件 newzfwj 政策文件 bmgfxwj 政府信息公开
+crawlers_category = {
+    'gfxwj': 'c102914/gfxwj',
+    'newzfwj': 'c103041/newzfwj.shtml',
+    'bmgfxwj': 'c111304/bmgfxwj.shtml?lion=1'
+}
 
-class JsGovSpider(BaseSpider):
+crawlers_name = {
+    'gfxwj': '规范文件',
+    'newzfwj': '政策文件',
+    'bmgfxwj': '政府信息公开'
+}
+
+
+class ScGovSpider(BaseSpider):
     """
-    广州市行政规范性文件统一发布平台 爬虫
+    四川省人民政府 爬虫
     """
 
     def __init__(self):
@@ -31,22 +44,27 @@ class JsGovSpider(BaseSpider):
         url
         :return:
         """
-        return 'http://www.jiangsu.gov.cn/col/'
+        return 'https://www.sc.gov.cn/10462/'
 
     @property
     def headers(self):
         return {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "Accept-Encoding": "gzip, deflate",
+            "Accept-Encoding": "gzip, deflate, br, zstd",
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
             "Cache-Control": "max-age=0",
             "Connection": "keep-alive",
-            "Cookie": "__jsluid_h=39756ea1fafaa02d0b3a03353fe0d282; zh_choose_1=s; arialoadData=true; ariawapChangeViewPort=false; d7d579b9-386c-482a-b971-92cad6721901=WyI0MjIyMDUwNDUiXQ",
-            "Host": "www.jiangsu.gov.cn",
-            "If-Modified-Since": "Thu, 01 Feb 2024 03:54:02 GMT",
-            "If-None-Match": "W/\"65bb15da-39f6\"",
+            "Cookie": "yfx_c_g_u_id_10000001=_ck24042515112816087943581676676; yfx_f_l_v_t_10000001=f_t_1714029088600__r_t_1714029088600__v_t_1714029088600__r_c_0; _yfxkpy_ssid_10003074=%7B%22_yfxkpy_firsttime%22%3A%221714029088633%22%2C%22_yfxkpy_lasttime%22%3A%221714029088633%22%2C%22_yfxkpy_visittime%22%3A%221714029088633%22%2C%22_yfxkpy_domidgroup%22%3A%221714029088633%22%2C%22_yfxkpy_domallsize%22%3A%22100%22%2C%22_yfxkpy_cookie%22%3A%2220240425151128636721454305856448%22%7D; Hm_lvt_da7caec4897c6edeca8fe272db36cca4=1714029089; Hm_lpvt_da7caec4897c6edeca8fe272db36cca4=1714029536",
+            "Host": "www.sc.gov.cn",
+            "Referer": "https://www.sc.gov.cn/10462/c102914/gfxwj.shtml",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-Fetch-User": "?1",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "sec-ch-ua": "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0"
         }
 
     @property
@@ -64,22 +82,27 @@ class JsGovSpider(BaseSpider):
             end_date = f'{check_date.year}-{int(check_date.month):02d}-{int(check_date.day):02d}'
         return start_date, end_date
 
-    async def collect_data(self, arrd=False):
+    async def collect_data(self, name: str):
         """
         General method to collect data, parameterized to differentiate between GDI and ARRD.
-        :param arrd: Boolean, if True it handles ARRD, else handles GDI.
+        :param name:
         :return:
         """
-        doc_type = 'ARRD' if arrd else 'GDI'
-        col_index = 'col76705' if arrd else 'col76841'
-        url = f'{self.url}{col_index}/index.html'
+        doc_type = crawlers_category[name]
+        spider_name = crawlers_name[name]
+        url = f'{self.url}{doc_type}/gfxwj.shtml'
 
-        await self.init_page()
-        await self.page.goto(url)
-        await self.page.wait_for_timeout(400)
-        self.logger.info(f'Start collecting {doc_type} data at {url} for dates <{self.check_date}>')
+        repo = await self.async_get_req(
+            url=url,
+            headers=self.headers
+        )
+        repo.encoding = 'utf-8'
+        self.logger.info(repo)
 
-        detail_pages = await self.parse_news_list(start_date=self.check_date[0], end_date=self.check_date[1])
+        self.logger.info(f'Start collecting {spider_name} data at {url} for dates <{self.check_date}>')
+
+        detail_pages = await self.parse_news_list(spider_name=spider_name, start_date=self.check_date[0],
+                                                  end_date=self.check_date[1])
 
         if not detail_pages:
             self.logger.warning(f'No data found for {doc_type} at {url} for dates {self.check_date}')
@@ -114,11 +137,11 @@ class JsGovSpider(BaseSpider):
         )
         await asyncio.sleep(0.3)  # Controlled delay between requests
 
-    async def get_gdi(self):
+    async def get_gfxwj(self):
         """
         Get Government documents and interpretation
         """
-        await self.collect_data(arrd=False)
+        await self.collect_data('gfxwj')
 
     async def get_arrd(self):
         """
@@ -126,7 +149,7 @@ class JsGovSpider(BaseSpider):
         """
         await self.collect_data(arrd=True)
 
-    async def parse_news_list(self, start_date: str, end_date: str):
+    async def parse_news_list(self, spider_name: str, start_date: str, end_date: str):
         """
         parse news list
         :param start_date:
@@ -161,10 +184,14 @@ class JsGovSpider(BaseSpider):
 
         last_item_date_str = clean_text(''.join(li_list[-1].xpath('./b/text()')))
         last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
-
+        # next
+        doc_type = crawlers_category[spider_name]
+        spider_name = crawlers_name[spider_name]
+        _next_url = f'{self.url}{doc_type}/gfxwj_{2}.shtml'
+        _repo = await self.async_get_req(_next_url)
+        await self.page.locator('//a[@title="下一页"]').click()
+        await self.page.wait_for_timeout(350)
         while last_item_date >= datetime.strptime(start_date, '%Y-%m-%d').date():
-            await self.page.locator('//a[@title="下一页"]').click()
-            await self.page.wait_for_timeout(350)
             next_html_text = await self.page.content()
             next_html = etree.HTML(next_html_text, etree.HTMLParser(encoding="utf-8"))
             next_items_list = next_html.xpath('//ul[@id="gz_list"]//li')
@@ -272,5 +299,5 @@ class JsGovSpider(BaseSpider):
         :return:
         """
         self.logger.info('start running crawlers...')
-        await self.get_gdi()
-        await self.get_arrd()
+        await self.get_gfxwj()
+        # await self.get_arrd()

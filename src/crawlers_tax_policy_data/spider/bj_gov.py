@@ -16,7 +16,7 @@ from crawlers_tax_policy_data.utils.utils import clean_text
 
 class BjGovSpider(BaseSpider):
     """
-    广州市行政规范性文件统一发布平台 爬虫
+    北京市人民政府 爬虫
     """
     file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt']
     folder = 'beijing.gov.cn'
@@ -116,7 +116,12 @@ class BjGovSpider(BaseSpider):
                 await asyncio.sleep(0.3)
         self.logger.info('北京市人民政府 政策文件  %s-%s Data collection completed', start_date, end_date)
 
-    async def parse_news_list(self, html_text: str, start_date: str, end_date: str):
+    async def parse_news_list(
+            self,
+            html_text: str,
+            start_date: str,
+            end_date: str
+    ):
         """
         parse news list
         :param html_text:
@@ -126,7 +131,6 @@ class BjGovSpider(BaseSpider):
         """
         self.logger.info('parse Beijing policy document list page')
         res = []
-        # html_text = await self.page.content()
         html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))
 
         def parse_news_items(all_row: list):
