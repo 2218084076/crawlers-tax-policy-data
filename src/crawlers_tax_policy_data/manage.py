@@ -1,5 +1,6 @@
 import asyncio
 
+from crawlers_tax_policy_data.spider.bj_gov import BjGovSpider
 from crawlers_tax_policy_data.spider.gd_gov_doc_lib import GdGovDocLibSpider
 from crawlers_tax_policy_data.spider.gd_gov_latest_policy import \
     GdGovLatestPolicySpider
@@ -18,7 +19,8 @@ crawlers = {
     'gd-gov-latest-policy': GdGovLatestPolicySpider,
     'gd-gov-doc-lib': GdGovDocLibSpider,
     'gz-gov': GzGovSpider,
-    'js-gov': JsGovSpider
+    'js-gov': JsGovSpider,
+    'bj-gov': BjGovSpider
 }
 
 

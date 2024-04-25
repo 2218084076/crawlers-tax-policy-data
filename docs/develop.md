@@ -107,7 +107,6 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   并在 config/settings `START_DATE`和`END_DATE` 中确认需要采集的日期，默认采集当日的数据
 
   ----------------------------------------------------------------
-
   gov [中央人民政府](www.gov.cn)
 
   sz-gov [深圳政府在线](www.sz.gov.cn)
@@ -119,7 +118,7 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   gd-gov-latest-policy [广东省政府 > 最新政策](www.gd.gov.cn/gdywdt)
 
   gd-gov-doc-lib [广东省政府 > 文件库](www.gd.gov.cn/zwgk/wjk/qbwj/)
-  
+
   gz-gov [广州市行政规范性文件统一发布平台](www.gz.gov.cn/gfxwj/)
   ----------------------------------------------------------------
 
