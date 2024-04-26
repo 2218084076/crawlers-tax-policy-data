@@ -15,7 +15,7 @@ from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.spider.sc_newzfwj import ScNewzfwj
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import clean_text
+from crawlers_tax_policy_data.utils.utils import clean_text, extract_url_base
 
 # gfxwj 规范文件 newzfwj 政策文件 bmgfxwj 政府信息公开
 crawlers_category = {
@@ -325,14 +325,5 @@ class ScGovSpider(BaseSpider):
         :return:
         """
         self.logger.info('start running crawlers...')
-        await self.get_gfxwj()
-        # await self.get_newzfwj()
-
-
-def extract_url_base(url):
-    parts = url.split('/')
-    for i in range(len(parts)):
-        if len(parts[i]) == 4 and parts[i].isdigit() and i + 3 < len(parts):
-            if parts[i + 1].isdigit() and parts[i + 2].isdigit():
-                return '/'.join(parts[:i + 3])
-    return ''
+        # await self.get_gfxwj()
+        await self.get_newzfwj()

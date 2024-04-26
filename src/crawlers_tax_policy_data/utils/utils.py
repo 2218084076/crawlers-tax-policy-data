@@ -36,3 +36,12 @@ def clean_text(text):
 
 def is_match(text):
     return bool(re.match(pattern, text))
+
+
+def extract_url_base(url):
+    parts = url.split('/')
+    for i in range(len(parts)):
+        if len(parts[i]) == 4 and parts[i].isdigit() and i + 3 < len(parts):
+            if parts[i + 1].isdigit() and parts[i + 2].isdigit():
+                return '/'.join(parts[:i + 3])
+    return ''
