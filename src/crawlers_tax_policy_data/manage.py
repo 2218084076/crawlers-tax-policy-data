@@ -22,7 +22,7 @@ crawlers = {
     'gz-gov': GzGovSpider,
     'js-gov': JsGovSpider,
     'bj-gov': BjGovSpider,
-    'sc-gov': ScGovSpider,
+    'sc-gov': ScGovSpider,  # `gfxwj` `newzfwj` `bmgfxwj` 三个网址的爬虫
 }
 
 

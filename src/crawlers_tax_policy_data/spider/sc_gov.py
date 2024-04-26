@@ -5,6 +5,7 @@ https://www.sc.gov.cn/10462/c103041/newzfwj.shtml 省政府政策文件
 https://www.sc.gov.cn/10462/c111304/bmgfxwj.shtml?lion=1 政府信息公开
 """
 import asyncio
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -12,13 +13,14 @@ from lxml import etree
 
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
+from crawlers_tax_policy_data.spider.sc_newzfwj import ScNewzfwj
 from crawlers_tax_policy_data.storage.local import save_data
 from crawlers_tax_policy_data.utils.utils import clean_text
 
 # gfxwj 规范文件 newzfwj 政策文件 bmgfxwj 政府信息公开
 crawlers_category = {
     'gfxwj': 'c102914/gfxwj',
-    'newzfwj': 'c103041/newzfwj.shtml',
+    'newzfwj': 'https://www.sc.gov.cn/10462/c103041/newzfwj.shtml?channelid=9c2314405df140af83649dff8f30055b&keyWord=&wh=&title=&fwzh=&pageSize=15&pageNum=',
     'bmgfxwj': 'c111304/bmgfxwj.shtml?lion=1'
 }
 
@@ -33,10 +35,12 @@ class ScGovSpider(BaseSpider):
     """
     四川省人民政府 爬虫
     """
+    folder = 'sc.gov.cn/政府规范性文件'
 
     def __init__(self):
         super().__init__()
         self.text_xpath = '//div[@class="info_cont word"]/p//span//text()'
+        self.newzfwj_spider = ScNewzfwj()
 
     @property
     def url(self):
@@ -88,6 +92,8 @@ class ScGovSpider(BaseSpider):
         :param name:
         :return:
         """
+        start_date, end_date = self.check_date
+
         doc_type = crawlers_category[name]
         spider_name = crawlers_name[name]
         url = f'{self.url}{doc_type}.shtml'
@@ -97,48 +103,68 @@ class ScGovSpider(BaseSpider):
             headers=self.headers
         )
         repo.encoding = 'utf-8'
-        self.logger.info(repo)
-        self.logger.info(f'Start collecting {spider_name} data at {url} for dates <{self.check_date}>')
-
+        self.logger.info(
+            f'Start collecting `四川省人民政府 %s` data at %s for dates %s-%s',
+            spider_name,
+            url,
+            start_date,
+            end_date
+        )
         detail_pages = await self.parse_news_list(
             html_text=repo.text,
             spider_name=name,
-            start_date=self.check_date[0],
-            end_date=self.check_date[1]
+            start_date=start_date,
+            end_date=end_date
         )
 
         if not detail_pages:
-            self.logger.warning(f'No data found for {spider_name} at {url} for dates {self.check_date}')
-            return
+            self.logger.warning(f'No data found for %s at %s for dates %s-%s', spider_name, url, start_date, end_date)
+            return []
 
+        await self.init_page()
         for _p in detail_pages:
-            _link = _p.get('link')
-            output_folder = 'sc.gov.cn'
-            await self.process_page(_p, output_folder)
+            await self.process_page(_p, start_date, end_date)
+
         await self.stop_page()
 
-    async def process_page(self, page_data, output_folder):
+    async def process_page(self, page_data, start_date, end_date):
         """
         Process individual page and save data.
+        :param start_date:
+        :param end_date:
         :param page_data: Dictionary containing page details.
-        :param output_folder: Output directory.
         :return:
         """
         _link = page_data.get('link')
+
         if 'pdf' in _link:
             content = {key: page_data[key] for key in ['link', 'date', 'title', 'editor']}
         else:
             await self.page.goto(_link)
-            self.logger.info(f'Accessing detail page {_link}')
-            content = await self.parse_detail_page()
+            await self.page.wait_for_timeout(350)
+            # repo = await self.async_get_req(url=_link, headers=self.headers)
+            # repo.encoding = 'utf-8'
+            html_text = await self.page.content()
+            content = await self.parse_detail_page(html_text=html_text)
+
+            _title = re.sub(r'\s+', '', page_data["title"])
+            detail_page_html_file = Path(
+                settings.GOV_OUTPUT_PAHT
+            ) / self.folder / f'{start_date}-{end_date}' / f'''{page_data['date']}-{_title}.html'''
+            self.save_html(
+                html_content=html_text,
+                file=detail_page_html_file
+            )
+
             content.update({key: page_data[key] for key in ['link', 'date', 'title']})
+            content.update({'html_file': str(detail_page_html_file)})
 
         save_data(
             content=content,
             file_path=Path(
-                settings.GOV_OUTPUT_PAHT) / output_folder / f"{self.check_date[0]}-{self.check_date[1]}-public-information.csv"
+                settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f"{start_date}-{end_date}-public-information.csv"
         )
-        await asyncio.sleep(0.3)  # Controlled delay between requests
+        await asyncio.sleep(0.3)
 
     async def get_gfxwj(self):
         """
@@ -146,11 +172,14 @@ class ScGovSpider(BaseSpider):
         """
         await self.collect_data('gfxwj')
 
-    async def get_arrd(self):
+    async def get_newzfwj(self):
         """
-        Get Administrative Rules and Regulatory Documents
+        Collect data from the "Provincial Government Policy Documents" section of the website
+        :return:
         """
-        await self.collect_data(arrd=True)
+        doc_type = crawlers_category['newzfwj']
+        spider_name = crawlers_name['newzfwj']
+        await self.newzfwj_spider.collector(url=doc_type, spider_name=spider_name)
 
     async def parse_news_list(self, html_text: str, spider_name: str, start_date: str, end_date: str):
         """
@@ -181,7 +210,7 @@ class ScGovSpider(BaseSpider):
                         <= datetime.strptime(end_date, '%Y-%m-%d').date()):
                     _title = clean_text(''.join(row.xpath('./div[@class="lie2"]/a/text()')))
                     _link = f'''https://www.sc.gov.cn{clean_text(''.join(row.xpath('./div[@class="lie2"]/a/@href')))}'''
-                    _editor = clean_text(''.join(row.xpath('./div[@class="lie3"]//text()')))
+                    _editor = ''.join(row.xpath('./div[@class="lie3"]//text()')).strip()
                     res.append({
                         'title': _title,
                         'link': _link,
@@ -214,11 +243,10 @@ class ScGovSpider(BaseSpider):
 
         return res
 
-    async def parse_detail_page(self):
+    async def parse_detail_page(self, html_text: str):
         """
-        parse detail page
-
-
+        parse detail page|
+        :param html_text:
         :return:
         """
         res = {}
@@ -227,27 +255,25 @@ class ScGovSpider(BaseSpider):
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
 
-        html_text = await self.page.content()
         html = etree.HTML(
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-        file_status = self.extract_file_status(html)
 
-        editor = next(
-            (''.join(t.xpath('./text()')) for t in html.xpath('//table[@class="xxgk_table"]//td') if
-             self.is_match(''.join(t.xpath('./text()'))))
-        )
+        texts = html.xpath('//div[@class="artleft"]//text()')
+        cleaned_texts = [clean_text(text) for text in texts]
+        file_status = ''.join(html.xpath('//span[@id="invalidTime"]/text()')).strip()
 
-        all_related_links = self.extract_links(html, '//div[@class="right"]//a')
+        editor = ''.join(html.xpath('//span[@class="n_wh"]/text()')).strip()
 
-        all_appendix = self.extract_links(html, xpath_query)
-
+        all_related_links = self.extract_related_links(html, '//div[@id="xqygb22"]//li//a', 'https://www.sc.gov.cn')
+        all_appendix = self.extract_related_links(html, xpath_query, f'{extract_url_base(self.page.url)}/')
+        all_appendix = list(set(all_appendix))
         res.update({
-            'text': clean_text(''.join(html.xpath('//div[@class="article"]/div[@class="left"]//p//text()'))),
-            'related_documents': ','.join(all_related_links),
+            'text': '\n'.join(cleaned_texts).strip(),
+            'related_documents': ',\n'.join(all_related_links),
             'state': ''.join(file_status),
-            'appendix': ','.join(all_appendix).replace('\xa0', ''),
+            'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'editor': editor
         })
 
@@ -282,27 +308,15 @@ class ScGovSpider(BaseSpider):
         return clean_text(' '.join(html.xpath(self.text_xpath)))
 
     @staticmethod
-    def extract_file_status(html):
-        """
-        Extract bulletin status
-        :param html:
-        :return:
-        """
-        for i in html.xpath('//table[@class="xxgk_table"]//td'):
-            if clean_text(''.join(i.xpath('./text()'))) == "时 效：":
-                next_td_text = ''.join(i.xpath('following-sibling::td[1]/text()'))
-                return next_td_text
-        return ''
-
-    @staticmethod
-    def extract_links(html, xpath):
+    def extract_related_links(html, xpath, prefix: str):
         """
         Extract the links according to the given XPath
+        :param prefix:
         :param html:
         :param xpath:
         :return:
         """
-        return [f'{"".join(link.xpath("./text()"))} http://www.jiangsu.gov.cn{"".join(link.xpath("@href"))}' for link in
+        return [f'{"".join(link.xpath("./text()"))} {prefix}{"".join(link.xpath("@href"))}'.strip() for link in
                 html.xpath(xpath)]
 
     async def run(self):
@@ -312,4 +326,13 @@ class ScGovSpider(BaseSpider):
         """
         self.logger.info('start running crawlers...')
         await self.get_gfxwj()
-        # await self.get_arrd()
+        # await self.get_newzfwj()
+
+
+def extract_url_base(url):
+    parts = url.split('/')
+    for i in range(len(parts)):
+        if len(parts[i]) == 4 and parts[i].isdigit() and i + 3 < len(parts):
+            if parts[i + 1].isdigit() and parts[i + 2].isdigit():
+                return '/'.join(parts[:i + 3])
+    return ''

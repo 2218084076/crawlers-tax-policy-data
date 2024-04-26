@@ -3,6 +3,7 @@
 https://www.gz.gov.cn/gfxwj/
 """
 import asyncio
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -18,7 +19,7 @@ class GzGovSpider(BaseSpider):
     """
     广州市行政规范性文件统一发布平台 爬虫
     """
-    file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt']
+    folder = 'gz.gov.cn'
 
     def __init__(self):
         super().__init__()
@@ -87,20 +88,36 @@ class GzGovSpider(BaseSpider):
                 save_data(
                     content={'link': _link, 'date': _p['date'], 'title': _p['title'], 'editor': _p['editor']},
                     file_path=Path(
-                        settings.GOV_OUTPUT_PAHT) / 'gz.gov.cn' / f'{start_date}-{end_date}-public'
-                                                                  f'-information.csv'
+                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public'
+                                                                                               f'-information.csv'
                 )
             else:
                 await self.page.goto(_link)
-                detail_data = await self.parse_detail_page()
-                self.logger.info('get %s ', self.page)
-                detail_data.update({'link': _link, 'date': _p['date'], 'editor': _p['editor']})
+                html_text = await self.page.content()
+
+                detail_data = await self.parse_detail_page(html_text)
+
+                _title = re.sub(r'\s+', '', detail_data["title"])
+                detail_page_html_file = Path(
+                    settings.GOV_OUTPUT_PAHT
+                ) / self.folder / f'{start_date}-{end_date}' / f'''{_p['date']}-{_title}.html'''
+                self.save_html(
+                    html_content=html_text,
+                    file=detail_page_html_file
+                )
+
+                detail_data.update({
+                    'link': _link,
+                    'date': _p['date'],
+                    'editor': _p['editor'],
+                    'html_file': str(detail_page_html_file)
+                })
 
                 save_data(
                     content=detail_data,
                     file_path=Path(
-                        settings.GOV_OUTPUT_PAHT) / 'gz.gov.cn' / f'{start_date}-{end_date}-public'
-                                                                  f'-information.csv'
+                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public'
+                                                                                               f'-information.csv'
                 )
                 await asyncio.sleep(0.3)
         await self.stop_page()
@@ -155,7 +172,7 @@ class GzGovSpider(BaseSpider):
 
         return res
 
-    async def parse_detail_page(self):
+    async def parse_detail_page(self, html_text: str):
         """
         parse detail page
 
@@ -169,23 +186,25 @@ class GzGovSpider(BaseSpider):
         xpath_query = f'//a[{file_xpath}]'
 
         await self.handle_page_js()
-        html_text = await self.page.content()
         html = etree.HTML(
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
+
         file_status = self.extract_file_status(html)
         title = self.extract_title(html)
+        texts = html.xpath('//div[@id="info_cont"]//text()')
+        cleaned_texts = [clean_text(text) for text in texts]
         all_related_links = self.extract_links(html, '//table[@id="bbsTab"]//a')
 
         all_appendix = self.extract_links(html, xpath_query)
 
         res.update({
             'title': title,
-            'text': title + clean_text(' '.join(html.xpath('//div[@class="info_cont word"]/p//span//text()'))),
-            'related_documents': ','.join(all_related_links),
-            'state': ''.join(file_status),
-            'appendix': ','.join(all_appendix).replace('\xa0', '')
+            'text': title + '\n'.join(cleaned_texts),
+            'related_documents': ',\n'.join(all_related_links),
+            'state': ''.join(file_status).strip(),
+            'appendix': ',\n'.join(all_appendix).replace('\xa0', '')
         })
 
         return res

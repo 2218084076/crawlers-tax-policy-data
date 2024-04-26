@@ -3,6 +3,7 @@
 https://www.beijing.gov.cn/zhengce/zhengcefagui/
 """
 import asyncio
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -100,8 +101,8 @@ class BjGovSpider(BaseSpider):
                 save_data(
                     content={'link': _link, 'date': _p['date'], 'title': _p['title']},
                     file_path=Path(
-                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}-public'
-                                                                  f'-information.csv'
+                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public'
+                                                                                               f'-information.csv'
                 )
             else:
                 detail_repo = await self.async_get_req(
@@ -112,14 +113,28 @@ class BjGovSpider(BaseSpider):
                 _html_text = detail_repo.text
 
                 detail_data = await self.parse_detail_page(html_text=_html_text, prefix=extract_url_base(_link))
-                detail_data.update({'link': _link, 'date': _p['date']})
+
+                _title = re.sub(r'\s+', '', detail_data["title"])
+                detail_page_html_file = Path(
+                    settings.GOV_OUTPUT_PAHT
+                ) / self.folder / f'{start_date}-{end_date}' / f'''{_p['date']}-{_title}.html'''
+                self.save_html(
+                    html_content=_html_text,
+                    file=detail_page_html_file
+                )
+
+                detail_data.update({
+                    'link': _link,
+                    'date': _p['date'],
+                    'html_file': str(detail_page_html_file)
+                })
 
                 save_data(
                     content=detail_data,
                     file_path=Path(
-                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}-public'
-                                                                  f'-information.csv'
-                )
+                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public'
+                                                                                               f'-information.csv')
+
                 await asyncio.sleep(0.3)
         self.logger.info('北京市人民政府 政策文件  %s-%s Data collection completed', start_date, end_date)
 
@@ -174,7 +189,6 @@ class BjGovSpider(BaseSpider):
         :return:
         """
         res = {}
-        self.logger.info('parse detail_page text data')
 
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
@@ -185,7 +199,11 @@ class BjGovSpider(BaseSpider):
         )
         file_status = self.extract_file_status(html)
         title = self.extract_title(html)
-        editor = clean_text(''.join(html.xpath('//li[@class="fwzh"]//span/text()'))).strip()
+        texts = html.xpath('//div[@class="leftbox clearfix"]//p//text()')
+        cleaned_texts = [clean_text(text) for text in texts]
+
+        editor = ''.join(html.xpath('//li[@class="fwzh"]//span/text()')).strip()
+        editor = re.sub(r'[\u200b\u2004\u2002\u2003\xa0\u3000]+', lambda m: '' * len(m.group()), editor)
         if editor == "〔〕号":
             editor = "----"
         all_related_links = self.extract_links(html, '//div[@class="relevantdoc xgjd"]/ul//a')
@@ -194,8 +212,8 @@ class BjGovSpider(BaseSpider):
 
         res.update({
             'title': title,
-            'text': clean_text('\n'.join(html.xpath('//div[@class="mainTextBox"]//p//text()'))),
-            'related_documents': ','.join(all_related_links),
+            'text': '\n'.join(cleaned_texts).strip(),
+            'related_documents': ',\n'.join(all_related_links),
             'state': ''.join(file_status),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'editor': editor

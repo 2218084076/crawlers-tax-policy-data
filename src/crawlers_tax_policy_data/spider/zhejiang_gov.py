@@ -18,6 +18,7 @@ from crawlers_tax_policy_data.utils.utils import clean_text
 class ZJSpider(BaseSpider):
     """zhejiang gov Spider"""
     pattern = r'^\S+〔\d+〕\d+号$'
+    folder = 'zj.gov.cn'
 
     @property
     def url(self):
@@ -90,13 +91,27 @@ class ZJSpider(BaseSpider):
             await self.page.wait_for_timeout(400)
             html_text = await self.page.content()
             detail_data = self.parse_detail_page(html_text)
-            self.logger.info('get %s ', self.page)
-            detail_data.update({'link': _link, 'date': _p['date']})
+
+            _title = re.sub(r'\s+', '', detail_data["title"])
+            detail_page_html_file = Path(
+                settings.GOV_OUTPUT_PAHT
+            ) / self.folder / f'{start_date}-{end_date}' / f'''{_p['date']}-{_title}.html'''
+            self.save_html(
+                html_content=html_text,
+                file=detail_page_html_file
+            )
+
+            detail_data.update({
+                'link': _link,
+                'date': _p['date'],
+                'html_file': str(detail_page_html_file)
+            })
 
             save_data(
                 content=detail_data,
-                file_path=Path(settings.GOV_OUTPUT_PAHT) / 'zj.gov.cn' / f'{start_date}-{end_date}-public'
-                                                                         f'-information.csv'
+                file_path=Path(
+                    settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public'
+                                                                                           f'-information.csv'
             )
             await asyncio.sleep(0.5)
         await self.stop_page()
@@ -119,7 +134,7 @@ class ZJSpider(BaseSpider):
             :return:
             """
             for row in all_row:
-                _page_date = clean_text(''.join(row.xpath('./span[@class="xzgfx_list_title5"]/text()')))
+                _page_date = ''.join(row.xpath('./span[@class="xzgfx_list_title5"]/text()')).strip()
                 _date = datetime.strptime(
                     _page_date,
                     '%Y-%m-%d'
@@ -136,7 +151,7 @@ class ZJSpider(BaseSpider):
         items_list = html.xpath('//div[@class="xzgfx_list_item cf"]')
         parse_news_items(items_list)
 
-        last_item_date_str = clean_text(''.join(items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()')))
+        last_item_date_str = ''.join(items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()')).strip()
         last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
 
         while last_item_date >= datetime.strptime(start_date, '%Y-%m-%d').date():
@@ -147,8 +162,7 @@ class ZJSpider(BaseSpider):
             next_items_list = next_html.xpath('//div[@class="xzgfx_list_item cf"]')
             parse_news_items(next_items_list)
 
-            last_item_date_str = clean_text(
-                ''.join(next_items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()')))
+            last_item_date_str = ''.join(next_items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()')).strip()
             last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
 
         await self.stop_page()
@@ -166,21 +180,25 @@ class ZJSpider(BaseSpider):
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-        title = clean_text(''.join(html.xpath('//td[@class="wzbt"]/text()')))
+        title = clean_text(''.join(html.xpath('//td[@class="wzbt"]/text()'))).strip()
         # 文号
-        editor = clean_text(''.join(html.xpath('//tr[@class="xxgk-info-wh"]/td[1]/text()'))) if self.is_match(
-            clean_text(''.join(html.xpath('//tr[@class="xxgk-info-wh"]/td[1]/text()')))) else ''
+        text = ''.join(html.xpath('//tr[@class="xxgk-info-wh"]//text()'))
+        editor = ''.join(html.xpath('//tr[@class="xxgk-info-wh"]/td[1]/text()')).strip() if self.is_match(
+            ''.join(html.xpath('//tr[@class="xxgk-info-wh"]/td[1]/text()')).strip()) else ''
 
-        state = clean_text(''.join(html.xpath('//table[@class="xxgk"]//tr[4]/td/text()')))
+        state = ''.join(html.xpath('//table[@class="xxgk"]//tr[4]/td/text()')).strip()
 
         related_documents = ''
+        texts = html.xpath('//div[@id="zoom"]//p//text()')
+        cleaned_texts = [clean_text(text) for text in texts]
+
         res.update({
             'title': title,
-            'text': title + clean_text(''.join(html.xpath('//div[@id="zoom"]//p/text()'))),
+            'text': title + '\n'.join(cleaned_texts),
             'editor': editor,
             'state': state,
             # 附件
-            'appendix': ','.join([
+            'appendix': ',\n'.join([
                 clean_text(''.join(a.xpath('./text()'))) + ' - https://www.zj.gov.cn' + clean_text(
                     ''.join(a.xpath('@href')))
                 for a in html.xpath('//div[@id="zoom"]//p')[-1].xpath('.//a')

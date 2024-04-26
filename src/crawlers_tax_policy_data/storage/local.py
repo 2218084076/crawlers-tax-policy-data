@@ -14,7 +14,7 @@ def save_data(content: dict, file_path):
     """
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    header = ['链接', '标题', '文号', '状态', '发文日期', '税种', '正文', '附件', '相关文件/链接']
+    header = ['链接', '标题', '文号', '状态', '发文日期', '税种', '正文', '附件', '相关文件/链接', 'html_file']
     write_header = not file_path.exists() or file_path.stat().st_size == 0
 
     with open(file_path, 'a', encoding='utf-8', newline='') as csvfile:
@@ -32,5 +32,6 @@ def save_data(content: dict, file_path):
             content.get('text'),
             content.get('appendix'),
             content.get('related_documents'),
+            content.get('html_file')
         ])
-        logger.info('%s Write to file %s', content['title'], file_path)
+        logger.info('%s Write to file %s', content['title'].strip(), file_path)

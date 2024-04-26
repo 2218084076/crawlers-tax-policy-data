@@ -5,6 +5,7 @@ http://www.jiangsu.gov.cn/col/col76841/index.html
 http://www.jiangsu.gov.cn/col/col76556/index.html > http://www.jiangsu.gov.cn/col/col76705/index.html
 """
 import asyncio
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -20,6 +21,7 @@ class JsGovSpider(BaseSpider):
     """
     广州市行政规范性文件统一发布平台 爬虫
     """
+    folder = 'jiangsu.gov.cn'
 
     def __init__(self):
         super().__init__()
@@ -87,32 +89,43 @@ class JsGovSpider(BaseSpider):
 
         for _p in detail_pages:
             _link = _p.get('link')
-            output_folder = 'gz.gov.cn' if 'pdf' in _link else 'jiangsu.gov.cn'
-            await self.process_page(_p, output_folder)
+            output_folder = 'jiangsu.gov.cn' if 'pdf' in _link else 'jiangsu.gov.cn'
+            await self.process_page(_p)
         await self.stop_page()
 
-    async def process_page(self, page_data, output_folder):
+    async def process_page(self, page_data):
         """
         Process individual page and save data.
         :param page_data: Dictionary containing page details.
-        :param output_folder: Output directory.
         :return:
         """
+        start_date, end_date = self.check_date
+
         _link = page_data.get('link')
         if 'pdf' in _link:
-            content = {key: page_data[key] for key in ['link', 'date', 'title', 'editor']}
+            content = {key: page_data[key] for key in ['link', 'date', 'title']}
         else:
             await self.page.goto(_link)
-            self.logger.info(f'Accessing detail page {_link}')
-            content = await self.parse_detail_page()
+            html_text = await self.page.content()
+            content = self.parse_detail_page(html_text)
+
+            _title = re.sub(r'\s+', '', page_data["title"])
+            detail_page_html_file = Path(
+                settings.GOV_OUTPUT_PAHT
+            ) / self.folder / f'{start_date}-{end_date}' / f'''{page_data['date']}-{_title}.html'''
+            self.save_html(
+                html_content=html_text,
+                file=detail_page_html_file
+            )
             content.update({key: page_data[key] for key in ['link', 'date', 'title']})
+            content.update({'html_file': str(detail_page_html_file)})
 
         save_data(
             content=content,
             file_path=Path(
-                settings.GOV_OUTPUT_PAHT) / output_folder / f"{self.check_date[0]}-{self.check_date[1]}-public-information.csv"
+                settings.GOV_OUTPUT_PAHT) / self.folder / f"{start_date}-{end_date}" / f"{self.check_date[0]}-{self.check_date[1]}-public-information.csv"
         )
-        await asyncio.sleep(0.3)  # Controlled delay between requests
+        await asyncio.sleep(0.3)
 
     async def get_gdi(self):
         """
@@ -175,7 +188,7 @@ class JsGovSpider(BaseSpider):
 
         return res
 
-    async def parse_detail_page(self):
+    def parse_detail_page(self, html_text):
         """
         parse detail page
 
@@ -188,12 +201,14 @@ class JsGovSpider(BaseSpider):
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
 
-        html_text = await self.page.content()
         html = etree.HTML(
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
+
         file_status = self.extract_file_status(html)
+        texts = html.xpath('//div[@class="article"]/div[@class="left"]//p//text()')
+        cleaned_texts = [clean_text(text) for text in texts]
 
         editor = next(
             (''.join(t.xpath('./text()')) for t in html.xpath('//table[@class="xxgk_table"]//td') if
@@ -205,10 +220,10 @@ class JsGovSpider(BaseSpider):
         all_appendix = self.extract_links(html, xpath_query)
 
         res.update({
-            'text': clean_text(''.join(html.xpath('//div[@class="article"]/div[@class="left"]//p//text()'))),
-            'related_documents': ','.join(all_related_links),
+            'text': '\n'.join(cleaned_texts).strip(),
+            'related_documents': ',\n'.join(all_related_links),
             'state': ''.join(file_status),
-            'appendix': ','.join(all_appendix).replace('\xa0', ''),
+            'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'editor': editor
         })
 

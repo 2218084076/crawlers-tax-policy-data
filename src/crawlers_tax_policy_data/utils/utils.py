@@ -30,8 +30,8 @@ def clean_text(text):
     :param text:
     :return:
     """
-    text = re.sub(r'[ \u2003\xa0\u3000]+', ' ', text)
-    return text.strip()
+    text = re.sub(r'[\u200b\u2004\u2002\u2003\xa0\u3000]+', lambda m: ' ' * len(m.group()), text)
+    return text
 
 
 def is_match(text):

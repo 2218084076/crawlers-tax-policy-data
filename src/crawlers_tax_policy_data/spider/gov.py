@@ -7,12 +7,14 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
+from crawlers_tax_policy_data.utils.utils import clean_text
 
 
 class GovSpider(BaseSpider):
     """
     gov spider
     """
+    folder = 'gov.cn'
 
     @property
     def url(self):
@@ -74,8 +76,9 @@ class GovSpider(BaseSpider):
             end_date=end_date
         )
         await self.stop_page()
+
         if not detail_pages:
-            self.logger.info('<%s> no data', check_date)
+            self.logger.info('中央人民政府%s %s no data', self.folder, check_date)
             return []
 
         for _page in detail_pages:
@@ -86,23 +89,32 @@ class GovSpider(BaseSpider):
             repo.encoding = 'utf-8'
             self.logger.info('parse detail page %s', repo.url)
 
-            detail_data = self.parse_detail_page(repo.text)
+            html_content = repo.text
+
+            detail_data = self.parse_detail_page(html_content)
+            _pg_date = detail_data['info'][detail_data['info'].index('发布日期：') + 1]
+            detail_page_html_file = Path(
+                settings.GOV_OUTPUT_PAHT
+            ) / self.folder / f'{start_date}-{end_date}' / f'{_pg_date}-{_page["title"].replace(" ", "")}.html'
+
+            self.save_html(html_content=html_content, file=detail_page_html_file)
 
             current_news_data = {}
             current_news_data.update({
                 'link': _page.get("link"),
                 'title': detail_data['info'][detail_data['info'].index('标\u3000\u3000题：') + 1],
                 'editor': detail_data['info'][detail_data['info'].index('发文字号：') + 1],
-                'date': detail_data['info'][detail_data['info'].index('发布日期：') + 1],
+                'date': _pg_date,
                 'text': detail_data.get('text').replace('\u3000', ' '),
                 'related_documents': detail_data.get('related_documents'),
-                'appendix': ''
+                'appendix': '',
+                'html_file': str(detail_page_html_file)
             })
             save_data(
                 content=current_news_data,
                 file_path=Path(
-                    settings.GOV_OUTPUT_PAHT) / 'www.gov.cn-zhengce-xxgk' / f'{start_date}-{end_date}-public'
-                                                                            f'-information.csv'
+                    settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public'
+                                                                                           f'-information.csv'
             )
         self.logger.debug('Details page content parsing complete %s', self.url)
 
@@ -126,8 +138,7 @@ class GovSpider(BaseSpider):
                 await self.page.wait_for_timeout(400)
                 if (datetime.strptime(start_date, '%Y年%m月%d日').date()
                         <= _page_date
-                        <= datetime.strptime(end_date, '%Y年%m月%d日').date()
-                ):
+                        <= datetime.strptime(end_date, '%Y年%m月%d日').date()):
                     _title = await item.locator('a').text_content()
                     _link = await item.locator('a').get_attribute('href')
                     res.append({'title': _title, 'link': _link})
@@ -135,7 +146,6 @@ class GovSpider(BaseSpider):
 
         await asyncio.sleep(3)
         all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
-        self.logger.info('Parsing text contents for the first page')
         await parse_news_items(all_news)
         if all_news:
             last_news_date_str = await all_news[-1].locator('td').nth(-1).text_content()
@@ -143,10 +153,9 @@ class GovSpider(BaseSpider):
 
             while last_news_date >= datetime.strptime(start_date, '%Y年%m月%d日').date():
                 await self.page.locator('//*[@id="newPage"]/div[1]/div[8]').click()
-                self.logger.info('Check next page, Get more %s', self.page)
+                self.logger.info('Click next page, Get more %s', self.page)
                 await self.page.wait_for_timeout(400)
                 all_news = await self.page.locator('//tbody[@id="xxgkzn_list_tbody_ID"]//tr').all()
-                self.logger.info('Parsing text contents for the next page')
                 await parse_news_items(all_news)
                 last_news_date_str = await all_news[-1].locator('td').nth(-1).text_content()
                 last_news_date = datetime.strptime(last_news_date_str, '%Y年%m月%d日').date()
@@ -176,10 +185,8 @@ class GovSpider(BaseSpider):
                 else:
                     data.append(''.join(d.xpath('b/text()')))
         # 正文
-        text = [
-            p.text if p.text is not None else ' '.join(p.xpath('strong/text()'))
-            for p in html.xpath('//div[@class="trs_editor_view TRS_UEDITOR trs_paper_default trs_web"]')[0].findall('p')
-        ]
+        texts = html.xpath('//table[@class="border-table noneBorder pages_content"]//p//text()')
+        cleaned_texts = [clean_text(text) for text in texts]
         # 相关链接
         related_documents_li = html.xpath('//ul[@class="jiedu_list bt13"]//li')
         related_documents = []
@@ -191,10 +198,10 @@ class GovSpider(BaseSpider):
         all_appendix = self.extract_links(html, xpath_query)
 
         res.update({
-            'text': ''.join(text),
+            'text': '\n'.join(cleaned_texts),
             'info': data,
-            'related_documents': ','.join(related_documents),
-            'appendix': ','.join(all_appendix).replace('\xa0', ''),
+            'related_documents': ',\n'.join(related_documents),
+            'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
         })
 
         return res

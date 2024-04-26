@@ -1,4 +1,5 @@
 import logging
+import pathlib
 import re
 from datetime import datetime
 
@@ -18,7 +19,7 @@ class BaseSpider:
         self.browser: playwright.sync_api._generated.Browser | playwright.async_api._generated.Browser | None = None
         self.page: playwright.sync_api._generated.Page | playwright.async_api._generated.Page | None = None
         self.logger = logging.getLogger(f'{__name__}.{self.__class__.__name__}')
-        self.file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt','.wps']
+        self.file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt', '.wps']
         self.pattern = r'^\S+〔\d+〕\d+号$'
 
     @property
@@ -165,7 +166,7 @@ class BaseSpider:
         :param xpath:
         :return:
         """
-        return [''.join(link.xpath('./text()')) + ' ' + ''.join(link.xpath('@href')) for link in html.xpath(xpath)]
+        return [''.join(link.xpath('.//text()')) + ' ' + ''.join(link.xpath('@href')) for link in html.xpath(xpath)]
 
     def is_match(self, text):
         if not text:
@@ -173,3 +174,15 @@ class BaseSpider:
         if '其他文件' in text:
             return 1
         return bool(re.match(self.pattern, text))
+
+    def save_html(self, html_content: str, file: pathlib.Path):
+        """
+        save html content
+        :param html_content:
+        :param file:
+        :return:
+        """
+        file.parent.mkdir(parents=True, exist_ok=True)
+        self.logger.info('Save html content to %s', file)
+        with open(file, 'w', encoding='utf-8') as f:
+            f.write(html_content)

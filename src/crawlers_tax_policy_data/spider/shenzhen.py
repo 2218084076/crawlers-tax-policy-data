@@ -3,6 +3,8 @@
 shenzhen gov crawlers
 https://www.sz.gov.cn/cn/xxgk/zfxxgj/zcfg/szsfg/index.html
 """
+import asyncio
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -18,7 +20,7 @@ class ShenZhengSpider(BaseSpider):
     """
     shenzhen gov crawlers
     """
-    folder = 'www.sz.gov.cn'
+    folder = 'sz.gov.cn'
 
     @property
     def url(self):
@@ -70,13 +72,14 @@ class ShenZhengSpider(BaseSpider):
         else:
             start_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
             end_date = f'{check_date.year}年{int(check_date.month):02d}月{int(check_date.day):02d}日'
-        self.logger.info('Start collecting `%s` <%s> data',
+        self.logger.info('Start collecting %s %s-%s data',
                          '深圳市人民政府 https://www.sz.gov.cn/cn/xxgk/zfxxgj/zcfg/szsfg/index.html',
-                         (start_date, end_date))
+                         start_date, end_date)
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(400)
         html_text = await self.page.content()
+
         list_page_data = await self.parse_news_list(
             html_text=html_text,
             start_date=start_date,
@@ -94,13 +97,27 @@ class ShenZhengSpider(BaseSpider):
             await self.page.goto(_link)
             page_content = await self.page.content()
             detail_data = self.parse_detail_page(page_content)
-            detail_data.update({'link': _link})
+
+            # save html file
+            _title = re.sub(r'\s+', '', detail_data["title"])
+            detail_page_html_file = Path(
+                settings.GOV_OUTPUT_PAHT
+            ) / self.folder / f'{start_date}-{end_date}' / f'''{detail_data["date"]}-{_title}.html'''
+            self.save_html(
+                html_content=page_content,
+                file=detail_page_html_file
+            )
+
+            detail_data.update({'link': _link, 'html_file': str(detail_page_html_file)})
+
             save_data(
                 content=detail_data,
                 file_path=Path(
-                    settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}-public-information.csv'
+                    settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public-information.csv'
             )
-        self.logger.debug('Details page content parsing complete %s', self.url)
+            await asyncio.sleep(0.3)
+
+        self.logger.debug('Details page content parsing complete %s', self.folder)
         await self.stop_page()
 
     async def parse_news_list(self, html_text: str, start_date: str, end_date: str):
@@ -154,20 +171,26 @@ class ShenZhengSpider(BaseSpider):
         :return:
         """
         res = {}
-        self.logger.info('parse detail_page text data')
         html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))  # fix garbled characters in requests
-        title = clean_text(''.join(html.xpath('//div[@class="tit"]/h1/text()')))
+        title = re.sub(r'\s+', '', clean_text(''.join(html.xpath('//div[@class="tit"]/h1/text()'))))
         editor = ''.join(html.xpath('//div[@class="xx_con"][1]/p[6]/text()'))
         date = ''.join(html.xpath('//div[@class="xx_con"][1]/p[4]/text()')).strip()
-        related_documents = ','.join(
+        related_documents = ',\n'.join(
             [' - '.join((item.text, ''.join(item.xpath('@href')))) for item in html.xpath('//div[@class="fjdown"]//a')]
         )
+        file_xpath = self.build_file_xpath()
+        xpath_query = f'//a[{file_xpath}]'
+        all_appendix = self.extract_links(html, xpath_query)
+        texts = html.xpath('//div[@class="news_cont_d_wrap"]//text()')
+        cleaned_texts = [clean_text(text) for text in texts]
+
         res.update({
             'title': title,
-            'text': title + clean_text(''.join(html.xpath('//div[@class="news_cont_d_wrap"]//text()'))),
+            'text': title + '\n'.join(cleaned_texts),
             'editor': editor,
             'date': date,
             'related_documents': related_documents,
+            'appendix': ',\n'.join(all_appendix).strip()
         })
 
         return res

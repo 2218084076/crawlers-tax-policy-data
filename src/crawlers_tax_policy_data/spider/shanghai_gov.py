@@ -1,4 +1,5 @@
-import time
+import asyncio
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from crawlers_tax_policy_data.utils.utils import clean_text
 
 class ShangHaiGovSpider(BaseSpider):
     """shanghai gov Spider"""
+    folder = 'shanghai.gov.cn'
 
     @property
     def url(self):
@@ -65,8 +67,8 @@ class ShangHaiGovSpider(BaseSpider):
         :return:
         """
         start_date, end_date = self.check_date
-        self.logger.info('Start collecting `%s` <%s> data',
-                         '上海市人民政府 https://www.shanghai.gov.cn/nw12344/index.html', (start_date, end_date))
+        self.logger.info('Start collecting %s %s-%s data',
+                         '上海市人民政府 https://www.shanghai.gov.cn/nw12344/index.html', start_date, end_date)
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(350)
@@ -85,15 +87,31 @@ class ShangHaiGovSpider(BaseSpider):
 
             html_text = await self.page.content()
             detail_data = self.parse_detail_page(html_text)
-            self.logger.info('get %s ', self.page)
-            detail_data.update({'link': _link, 'date': _p['date']})
+
+            _title = re.sub(r'\s+', '', detail_data["title"])
+            detail_page_html_file = Path(
+                settings.GOV_OUTPUT_PAHT
+            ) / self.folder / f'{start_date}-{end_date}' / f'''{_p['date']}-{_title}.html'''
+            self.save_html(
+                html_content=html_text,
+                file=detail_page_html_file
+            )
+
+            detail_data.update({
+                'link': _link,
+                'date': _p['date'],
+                'html_file': str(detail_page_html_file)
+            })
 
             save_data(
                 content=detail_data,
-                file_path=Path(settings.GOV_OUTPUT_PAHT) / 'shanghai.gov.cn' / f'{start_date}-{end_date}-public'
-                                                                               f'-information.csv'
+                file_path=Path(
+                    settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public'
+                                                                                           f'-information.csv'
             )
-            time.sleep(0.5)
+            await asyncio.sleep(0.3)
+
+        await self.stop_page()
 
     async def parse_news_list(self, start_date: str, end_date: str):
         """
@@ -158,12 +176,12 @@ class ShangHaiGovSpider(BaseSpider):
         xpath_query = f'//a[{file_xpath}]'
 
         html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))  # fix garbled characters in requests
-        title = clean_text(''.join(html.xpath('//div[@id="ivs_title"]/text()')))
+        title = re.sub(r'\s+', '', clean_text(''.join(html.xpath('//div[@id="ivs_title"]/text()'))))
         # 文号
         editor = clean_text(''.join(html.xpath('//div[@id="ivs_content"]/p[2]/text()'))) if self.is_match(
             ''.join(html.xpath('//div[@id="ivs_content"]/p[2]/text()'))) else ''
 
-        related_documents = ','.join(
+        related_documents = ',\n'.join(
             [' - '.join(
                 (''.join(item.xpath('./a/@title')), 'https://www.shanghai.gov.cn' + ''.join(item.xpath('./a/@href'))))
                 for item in
@@ -175,7 +193,7 @@ class ShangHaiGovSpider(BaseSpider):
             'title': title,
             'text': title + clean_text(''.join(html.xpath('//div[@id="xggj"]//text()'))),
             'editor': editor,
-            'appendix': ','.join(all_appendix).replace('\xa0', ''),
+            'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': related_documents,
         })
 
