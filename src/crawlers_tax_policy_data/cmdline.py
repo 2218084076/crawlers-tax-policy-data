@@ -67,6 +67,12 @@ def crawlers_gov(city):
 
     bj-gov
     [北京市人民政府](beijing.gov.cn)
+
+    sc-gov
+    [四川省人民政府](sc.gov.cn)
+
+    safe
+    [国家外汇管理局](safe.gov.cn)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()

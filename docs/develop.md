@@ -120,6 +120,14 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   gd-gov-doc-lib [广东省政府 > 文件库](www.gd.gov.cn/zwgk/wjk/qbwj/)
 
   gz-gov [广州市行政规范性文件统一发布平台](www.gz.gov.cn/gfxwj/)
+
+  js-gov [江苏省人民政府](jiangsu.gov.cn)
+
+  bj-gov [北京市人民政府](beijing.gov.cn)
+
+  sc-gov [四川省人民政府](sc.gov.cn)
+
+  safe [国家外汇管理局](safe.gov.cn)
   ----------------------------------------------------------------
 
 Options:
