@@ -13,6 +13,7 @@ from lxml import etree
 
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
+from crawlers_tax_policy_data.spider.sc_bmgfxwj import ScBmgfxwj
 from crawlers_tax_policy_data.spider.sc_newzfwj import ScNewzfwj
 from crawlers_tax_policy_data.storage.local import save_data
 from crawlers_tax_policy_data.utils.utils import clean_text, extract_url_base
@@ -21,7 +22,7 @@ from crawlers_tax_policy_data.utils.utils import clean_text, extract_url_base
 crawlers_category = {
     'gfxwj': 'c102914/gfxwj',
     'newzfwj': 'https://www.sc.gov.cn/10462/c103041/newzfwj.shtml?channelid=9c2314405df140af83649dff8f30055b&keyWord=&wh=&title=&fwzh=&pageSize=15&pageNum=',
-    'bmgfxwj': 'c111304/bmgfxwj.shtml?lion=1'
+    'bmgfxwj': 'https://www.sc.gov.cn/10462/c111304/bmgfxwj.shtml?lion=1'
 }
 
 crawlers_name = {
@@ -41,6 +42,7 @@ class ScGovSpider(BaseSpider):
         super().__init__()
         self.text_xpath = '//div[@class="info_cont word"]/p//span//text()'
         self.newzfwj_spider = ScNewzfwj()
+        self.bmgfxwj_spider = ScBmgfxwj()
 
     @property
     def url(self):
@@ -180,6 +182,15 @@ class ScGovSpider(BaseSpider):
         doc_type = crawlers_category['newzfwj']
         spider_name = crawlers_name['newzfwj']
         await self.newzfwj_spider.collector(url=doc_type, spider_name=spider_name)
+
+    async def get_bmgfxwj(self):
+        """
+        Collect public data of government information
+        :return:
+        """
+        doc_type = crawlers_category['bmgfxwj']
+        spider_name = crawlers_name['bmgfxwj']
+        await self.bmgfxwj_spider.collector(url=doc_type, spider_name=spider_name)
 
     async def parse_news_list(self, html_text: str, spider_name: str, start_date: str, end_date: str):
         """
@@ -325,5 +336,6 @@ class ScGovSpider(BaseSpider):
         :return:
         """
         self.logger.info('start running crawlers...')
-        # await self.get_gfxwj()
+        await self.get_gfxwj()
         await self.get_newzfwj()
+        await self.get_bmgfxwj()
