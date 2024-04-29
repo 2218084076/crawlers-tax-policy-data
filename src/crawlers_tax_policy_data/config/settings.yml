@@ -21,3 +21,8 @@ GOV_OUTPUT_PAHT: "/crawlers"
 # start_date 和 end_date 都设置为空，则自动采集当前日期内数据
 START_DATE: ''
 END_DATE: ''
+
+MOF_URL_SUFFIX:
+  财政文告: "/caizhengwengao/index"  # 财政文告
+  财政部令: "/bulinggonggao/czbl/index"  # 财政部令
+  财政部公告: "/bulinggonggao/czbgg/index"  # 财政部公告

@@ -169,11 +169,16 @@ class BaseSpider:
         return [''.join(link.xpath('.//text()')) + ' ' + ''.join(link.xpath('@href')) for link in html.xpath(xpath)]
 
     def is_match(self, text):
+
+        original_text = text.replace(" ", "")
+
+        formatted_text = re.sub(r"(\d+)年第(\d+)号", r"〔\1〕\2号", original_text)
+
         if not text:
             return False
         if '其他文件' in text:
             return 1
-        return bool(re.match(self.pattern, text))
+        return bool(re.match(self.pattern, formatted_text))
 
     def save_html(self, html_content: str, file: pathlib.Path):
         """

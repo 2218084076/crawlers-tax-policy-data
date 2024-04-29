@@ -73,6 +73,16 @@
   和 `END_DATE` 参数是否为您想要采集的日期**
 - 默认 `START_DATE` 和 `END_DATE` 两个参数为空, 即为从当前日期开始采集,
   参数说明如下：
+- 针对 `财政部` www.mof.gov.cn
+  爬虫，由于三个页面解析逻辑通用，需通过 [settings.yml](src%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  中的 `MOF_URL_SUFFIX` 参数指定当个爬虫运行
+    - 其要想单单独运行一个网站，则需注释掉其他两个网站的配置，全部打开时，爬虫会依次采集指定日期范围内数据。
+    - ```yaml
+       MOF_URL_SUFFIX:
+          财政文告: "/caizhengwengao/index"  # 财政文告
+          财政部令: "/bulinggonggao/czbl/index"  # 财政部令
+          财政部公告: "/bulinggonggao/czbgg/index"  # 财政部公告
+    ```
 
 ```yaml
 # 需要采集的日期，
@@ -128,6 +138,8 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   sc-gov [四川省人民政府](sc.gov.cn)
 
   safe [国家外汇管理局](safe.gov.cn)
+
+  mof [财政部 财政文告;财政部令;财政部公告](mof.gov.cn)
   ----------------------------------------------------------------
 
 Options:
@@ -143,5 +155,7 @@ python .\src\crawlers_tax_policy_data\cmdline.py crawlers-gov -c gov
 # 逐一运行每个爬虫
 python .\src\crawlers_tax_policy_data\cmdline.py run-all
 ```
+
+
 
 

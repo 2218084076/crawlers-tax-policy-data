@@ -73,6 +73,9 @@ def crawlers_gov(city):
 
     safe
     [国家外汇管理局](safe.gov.cn)
+
+    mof
+    [财政部 财政文告;财政部令;财政部公告](mof.gov.cn)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()
