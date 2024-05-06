@@ -1,3 +1,7 @@
+"""
+Base class for crawlers
+@author: Terry
+"""
 import logging
 import pathlib
 import re
@@ -14,6 +18,10 @@ from crawlers_tax_policy_data.utils.utils import date_obj
 
 
 class BaseSpider:
+    """
+    Base class for crawlers
+    """
+
     def __init__(self):
         self.now_date = None
         self.browser: playwright.sync_api._generated.Browser | playwright.async_api._generated.Browser | None = None
@@ -52,10 +60,6 @@ class BaseSpider:
         else:
             return {'start': start_date, 'end': end_date}
 
-    @staticmethod
-    def queue_name():
-        raise NotImplementedError()
-
     @property
     def headers(self):
         """
@@ -79,7 +83,7 @@ class BaseSpider:
         :return:
         """
         self.logger.info('use sync request get %s', url)
-        return requests.get(url=url, **kwargs)
+        return requests.get(url=url, **kwargs, timeout=120)
 
     async def post_req(self, url: str, **kwargs):
         """
@@ -120,6 +124,10 @@ class BaseSpider:
         return repo
 
     def sync_init_page(self):
+        """
+        sync get by playwright
+        :return:
+        """
         p = sync_playwright().start()
         self.browser = p.webkit.launch(headless=settings.HEADLESS)
         self.page = self.browser.new_page()
@@ -169,7 +177,11 @@ class BaseSpider:
         return [''.join(link.xpath('.//text()')) + ' ' + ''.join(link.xpath('@href')) for link in html.xpath(xpath)]
 
     def is_match(self, text):
-
+        """
+        Check whether the text matches the pattern
+        :param text:
+        :return:
+        """
         original_text = text.replace(" ", "")
 
         formatted_text = re.sub(r"(\d+)年第(\d+)号", r"〔\1〕\2号", original_text)

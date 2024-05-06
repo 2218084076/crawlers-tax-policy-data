@@ -34,16 +34,20 @@ class GdGovDocLibSpider(BaseSpider):
     @property
     def headers(self):
         return {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
+                      "application/signed-exchange;v=b3;q=0.7",
             "Accept-Encoding": "gzip, deflate",
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
             "Cache-Control": "max-age=0",
             "Connection": "keep-alive",
-            "Cookie": "front_uc_session=eyJpdiI6IkRBY09IZDF3aVRZeHQyNEFtRiswQmc9PSIsInZhbHVlIjoiT2xVUjZYVGdYcGhwNVRjdzkyT3BcL3VkWWJPNkNza1Q2OWQwTjM5NnZ1akFtUHkxOEU2Zk40Q1dzaHJ0YjFNQ1wvIiwibWFjIjoiODA0ZGI4MDU4YzVhMmE5Mzg3MDBiOGFkMGFmZTg0NzUwMzUxMjUzYjMxY2UzZDYwMGQwNmNkMjQ0YTMzZDE3YiJ9",
+            "Cookie": "front_uc_session=eyJpdiI6IkRBY09IZDF3aVRZeHQyNEFtRiswQmc9PSIsInZhbHVlIjoiT2xVUjZYVGdYcGhwNVRjdzk"
+                      "yT3BcL3VkWWJPNkNza1Q2OWQwTjM5NnZ1akFtUHkxOEU2Zk40Q1dzaHJ0YjFNQ1wvIiwibWFjIjoiODA0ZGI4MDU4YzVhMmE5"
+                      "Mzg3MDBiOGFkMGFmZTg0NzUwMzUxMjUzYjMxY2UzZDYwMGQwNmNkMjQ0YTMzZDE3YiJ9",
             "Host": "www.gd.gov.cn",
             "Referer": "http://www.gd.gov.cn/",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/"
+                          "124.0.0.0 Safari/537.36"
         }
 
     @property
@@ -111,8 +115,9 @@ class GdGovDocLibSpider(BaseSpider):
                 save_data(
                     content=detail_data,
                     file_path=Path(
-                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / 'document library' / f'{start_date}-{end_date}-public'
-                                                                                                                    f'-information.csv'
+                        settings.GOV_OUTPUT_PAHT
+                    ) / self.folder / f'{start_date}-{end_date}' / 'document library' / f'{start_date}-{end_date}-'
+                                                                                        f'public-information.csv'
                 )
                 await asyncio.sleep(0.3)
 
@@ -198,7 +203,7 @@ class GdGovDocLibSpider(BaseSpider):
 
         res.update({
             'title': title,
-            'text':  '\n'.join(cleaned_texts).strip(),
+            'text': '\n'.join(cleaned_texts).strip(),
             'related_documents': ',\n'.join(all_related_links),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
         })

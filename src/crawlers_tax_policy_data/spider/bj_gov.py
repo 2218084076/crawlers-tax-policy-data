@@ -16,9 +16,14 @@ from crawlers_tax_policy_data.utils.utils import clean_text
 
 
 def extract_url_base(url: str):
+    """
+    extract_url_base
+    :param url:
+    :return:
+    """
     parts = url.split('/')
-    for i in range(len(parts)):
-        if len(parts[i]) == 6 and parts[i].isdigit():
+    for i, part in enumerate(parts):
+        if len(part) == 6 and part.isdigit():
             return '/'.join(parts[:i + 1])
     return None
 
@@ -45,19 +50,23 @@ class BjGovSpider(BaseSpider):
     @property
     def headers(self):
         return {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+                      ",application/signed-exchange;v=b3;q=0.7",
             "Accept-Encoding": "gzip, deflate, br, zstd",
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
             "Cache-Control": "max-age=0",
             "Connection": "keep-alive",
-            "Cookie": "Path=/; __jsluid_s=b3c15f33d5fb27be6570bb47228bb549; _va_ses=*; JSESSIONID=M2RkNDU3YTQtZWQ1Yi00YjY5LWFiY2UtOTc2ZGYwMjlmMDkw; arialoadData=false; _va_id=db017d68f37f750d.1714012327.1.1714012478.1714012327.",
+            "Cookie": "Path=/; __jsluid_s=b3c15f33d5fb27be6570bb47228bb549; _va_ses=*; JSESSIONID=M2RkNDU3YTQtZWQ1Yi00"
+                      "YjY5LWFiY2UtOTc2ZGYwMjlmMDkw; arialoadData=false; _va_id=db017d68f37f750d.1714012327.1.17140124"
+                      "78.1714012327.",
             "Host": "www.beijing.gov.cn",
             "Sec-Fetch-Dest": "document",
             "Sec-Fetch-Mode": "navigate",
             "Sec-Fetch-Site": "none",
             "Sec-Fetch-User": "?1",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124."
+                          "0.0.0 Safari/537.36",
         }
 
     @property

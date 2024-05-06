@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+utils
+"""
 import re
 from datetime import datetime
 
@@ -15,15 +18,6 @@ def date_obj(date_str: str):
     return date_object
 
 
-def parse_timestamp(timestamp):
-    """
-    Convert the timestamp string to a datetime object
-    :param timestamp:
-    :return:
-    """
-    date_time = datetime.fromtimestamp(timestamp)
-
-
 def clean_text(text):
     """
     Used to clean and standardize extracted text
@@ -35,10 +29,20 @@ def clean_text(text):
 
 
 def is_match(text):
+    """
+    Check if the text matches the pattern
+    :param text:
+    :return:
+    """
     return bool(re.match(pattern, text))
 
 
 def extract_url_base(url):
+    """
+    Extract the base url from the url
+    :param url:
+    :return:
+    """
     parts = url.split('/')
     for i in range(len(parts)):
         if len(parts[i]) == 4 and parts[i].isdigit() and i + 3 < len(parts):

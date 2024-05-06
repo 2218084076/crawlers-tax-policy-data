@@ -1,12 +1,6 @@
 # log
 LOG_PATH: '/crawlers'
 LOGLEVEL: INFO
-#
-# 商品信息存储位置
-#MONGODB_URL: mongodb://127.0.0.1:27017/
-#MONGODB_NAME: 'customs_data'
-#
-#REDIS_URL: redis://127.0.0.1:6379/0
 
 # 浏览器无头模式,
 HEADLESS: True
@@ -22,7 +16,17 @@ GOV_OUTPUT_PAHT: "/crawlers"
 START_DATE: ''
 END_DATE: ''
 
+# 财政部 爬虫配置
 MOF_URL_SUFFIX:
   财政文告: "/caizhengwengao/index"  # 财政文告
   财政部令: "/bulinggonggao/czbl/index"  # 财政部令
   财政部公告: "/bulinggonggao/czbgg/index"  # 财政部公告
+
+# 四川省人民政府 爬虫配置
+# gfxwj   https://www.sc.gov.cn/10462/c102914/gfxwj.shtml	       政府规范性文件
+# newzfwj https://www.sc.gov.cn/10462/c103041/newzfwj.shtml        省政府政策文件
+# bmgfxwj https://www.sc.gov.cn/10462/c111304/bmgfxwj.shtml?lion=1 政府信息公开
+SC_GOV:
+  - "gfxwj"
+  - "newzfwj"
+  - "bmgfxwj"

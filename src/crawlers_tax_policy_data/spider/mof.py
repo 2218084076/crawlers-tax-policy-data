@@ -26,7 +26,6 @@ url_suffix = settings.MOF_URL_SUFFIX
 #     '财政部公告': '/bulinggonggao/czbgg/index'  # 财政部公告
 # }
 
-
 class MofSpider(BaseSpider):
     """
     财政部 spider

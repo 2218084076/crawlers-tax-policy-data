@@ -35,9 +35,37 @@ isort = "^5.13.2"
 pytest-asyncio = "^0.23.6"
 pytest-cov = "^5.0.0"
 pytest-mock = "^3.14.0"
+pylint = "^3.1.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pylint.main]
+disable = [
+    "too-many-instance-attributes",
+    "broad-except",
+    "too-few-public-methods",
+    "unused-argument",
+    "no-name-in-module",
+    "fixme",
+    "duplicate-code",
+    "arguments-differ",
+    "line-too-long"
+]
+good-names = [
+    "pattern"
+]
+extension-pkg-allow-list = [
+    "lxml",
+]
+ignore-paths = [
+    "src/crawlers_tax_policy_data/example/.*",
+    "src/crawlers_tax_policy_data/repositories/.*",
+]
+
+[tool.pylint.design]
 max-line-length = 130
+max-args = 11
+max-attributes = 10
+min-public-methods = 1

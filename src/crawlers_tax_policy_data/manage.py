@@ -24,7 +24,7 @@ crawlers = {
     'gz-gov': GzGovSpider,
     'js-gov': JsGovSpider,
     'bj-gov': BjGovSpider,
-    'sc-gov': ScGovSpider,  # `gfxwj` `newzfwj` `bmgfxwj` 三个网址的爬虫
+    'sc-gov': ScGovSpider,  # `gfxwj` `newzfwj` `bmgfxwj` 三个网址的爬虫，请在 settings.yml 配置文件中 SC_GOV 参数确认
     'safe': SafeSpider,
     'mof': MofSpider
 }

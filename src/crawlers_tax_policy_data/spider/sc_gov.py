@@ -43,6 +43,11 @@ class ScGovSpider(BaseSpider):
         self.text_xpath = '//div[@class="info_cont word"]/p//span//text()'
         self.newzfwj_spider = ScNewzfwj()
         self.bmgfxwj_spider = ScBmgfxwj()
+        self.task_list = {
+            'gfxwj': self.get_gfxwj,
+            'newzfwj': self.get_newzfwj,
+            'bmgfxwj': self.get_bmgfxwj
+        }
 
     @property
     def url(self):
@@ -144,8 +149,6 @@ class ScGovSpider(BaseSpider):
         else:
             await self.page.goto(_link)
             await self.page.wait_for_timeout(350)
-            # repo = await self.async_get_req(url=_link, headers=self.headers)
-            # repo.encoding = 'utf-8'
             html_text = await self.page.content()
             content = await self.parse_detail_page(html_text=html_text)
 
@@ -336,6 +339,6 @@ class ScGovSpider(BaseSpider):
         :return:
         """
         self.logger.info('start running crawlers...')
-        await self.get_gfxwj()
-        await self.get_newzfwj()
-        await self.get_bmgfxwj()
+        for _t in settings.SC_GOV:
+            await self.task_list[_t]()
+            await asyncio.sleep(1)

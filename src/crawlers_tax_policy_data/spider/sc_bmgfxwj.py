@@ -13,7 +13,33 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import clean_text, extract_url_base
+from crawlers_tax_policy_data.utils.utils import clean_text
+
+texts_xpath_expressions = [
+    '//div[@id="cmsArticleContent"]//text()',
+    '//div[@class="content-main-body"]//text()',
+    '//div[@class="content"]//text()',
+    '//div[@class="body-container"]//text()',
+    '//div[@class="xxgkzn_cont"]//text()',
+    '//div[@class="artleft"]//text()',
+    '//div[@id="xxgk_detail"]//text()',
+    '//div[@id="print"]//text()'
+]
+state_xpath_expressions = [
+    '//span[@id="invalidTime"]',
+    '//ul[@id="gfxwj_head"]//li',
+    '//div[@class="top"]/ul[@class="clearfix"]//span',
+    '//ul[@class="clearfix"]//li',
+    '//td[@id="yxx"]'
+]
+related_links_xpath_expressions = [
+    '//div[@class="zfwj_jdList"]//a',
+    '//div[@id="wzbox"]//a',
+    '//div[@id="tblArticleLinkContainer"]//a',
+    '//div[@class="cont"]//a',
+    '//div[@class="xggjul"]//a',
+    '//div[@id="print"]/a'
+]
 
 
 class ScBmgfxwj(BaseSpider):
@@ -176,6 +202,7 @@ class ScBmgfxwj(BaseSpider):
         """
         # TODO: 需要适配不同网站的解析逻辑
         current_pg_url = self.page.url
+        self.logger.info('Start parsing details page %s', current_pg_url)
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
 
@@ -183,18 +210,44 @@ class ScBmgfxwj(BaseSpider):
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-        texts = html.xpath('//div[@class="content"]//text()')
+
+        texts = []
+        for xpath in texts_xpath_expressions:
+            texts = html.xpath(xpath)
+            if texts:
+                break
         cleaned_texts = [clean_text(text) for text in texts]
 
-        all_related_links = extract_related_links(html, '//div[@id="xqygb22"]//li//a', 'https://www.sc.gov.cn')
-        all_related_links = list(set(all_related_links))
-        all_appendix = extract_related_links(html, xpath_query, f'{extract_url_base(current_pg_url)}/')
-        all_appendix = list(set(all_appendix))
+        all_related_links = []
+        for xpath in related_links_xpath_expressions:
+            all_related_links = extract_related_links(
+                html,
+                xpath,
+                '/'.join(current_pg_url.split('/')[0:3])
+            )
+            if all_related_links:
+                break
+
+        all_appendix = list(
+            dict.fromkeys(extract_related_links(html, xpath_query, '/'.join(current_pg_url.split('/')[0:3])))
+        )
+
+        state = ''
+        for xpath in state_xpath_expressions:
+            try:
+                state = ''.join(html.xpath(xpath)[-1].xpath('./text()')).strip()
+                if state:
+                    break
+            except IndexError:
+                state = ''
+        title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
+
         return {
             'text': '\n'.join(cleaned_texts).strip(),
             'related_documents': ',\n'.join(all_related_links),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
-            'state': ''.join(html.xpath('//span[@id="invalidTime"]/text()')).strip()
+            'state': state,
+            'title': title
         }
 
     async def details_pg_processor(self, pg_data: dict):
@@ -221,7 +274,7 @@ class ScBmgfxwj(BaseSpider):
                 file=detail_page_html_file
             )
 
-            content.update({key: pg_data[key] for key in ['link', 'date', 'title', 'editor']})
+            content.update({key: pg_data[key] for key in ['link', 'date', 'editor']})
             content.update({'html_file': str(detail_page_html_file)})
 
         save_data(
