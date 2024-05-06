@@ -1,6 +1,7 @@
 import asyncio
 
 from crawlers_tax_policy_data.spider.bj_gov import BjGovSpider
+from crawlers_tax_policy_data.spider.csrc import CsrcSpider
 from crawlers_tax_policy_data.spider.gd_gov_doc_lib import GdGovDocLibSpider
 from crawlers_tax_policy_data.spider.gd_gov_latest_policy import \
     GdGovLatestPolicySpider
@@ -26,7 +27,8 @@ crawlers = {
     'bj-gov': BjGovSpider,
     'sc-gov': ScGovSpider,  # `gfxwj` `newzfwj` `bmgfxwj` 三个网址的爬虫，请在 settings.yml 配置文件中 SC_GOV 参数确认
     'safe': SafeSpider,
-    'mof': MofSpider
+    'mof': MofSpider,
+    'csrc': CsrcSpider
 }
 
 
