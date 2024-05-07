@@ -99,7 +99,6 @@ class CsrcSpider(BaseSpider):
     async def list_page_parser(self):
         """
         parse news list
-        :param html_text:
         :return:
         """
         res = []
@@ -121,10 +120,10 @@ class CsrcSpider(BaseSpider):
                 next_pg_text,
                 etree.HTMLParser(encoding="utf-8", remove_comments=False)
             )
-            nex_li_list: List[etree._Element] = next_html.xpath('//ul[@class="list_ul"]/table/tbody//tr')[1:]
-            res.extend(self.per_line_parser(nex_li_list))
+            nex_lr_list: List[etree._Element] = next_html.xpath('//ul[@class="list_ul"]/table/tbody//tr')[1:]
+            res.extend(self.per_line_parser(nex_lr_list))
 
-            _last_pg_date_str = ''.join(nex_li_list[-1].xpath('.//span[@class="date"]/text()')).strip()
+            _last_pg_date_str = ''.join(nex_lr_list[-1].xpath('.//span[@class="date"]/text()')).strip()
             last_pg_date = datetime.strptime(_last_pg_date_str, '%Y-%m-%d').date()
         self.logger.info('There are %s proclamation items', len(res))
         return res
@@ -156,7 +155,7 @@ class CsrcSpider(BaseSpider):
             repo.encoding = 'utf-8'
             html_text = repo.text
 
-            pg_content = self.details_pg_parser(html_text=html_text)
+            pg_content = self.details_pg_parser(html_text=html_text, pg_data=pg_data)
 
             _title = re.sub(r'\s+', '', pg_data["title"])
             detail_page_html_file = self.output_dir / f'''{pg_data['date']}-{_title}.html'''
@@ -165,7 +164,7 @@ class CsrcSpider(BaseSpider):
                 file=detail_page_html_file
             )
 
-            pg_content.update({key: pg_data[key] for key in ['link', 'date', 'title']})
+            pg_content.update({key: pg_data[key] for key in ['link', 'date', 'editor']})
             pg_content.update({'html_file': str(detail_page_html_file)})
 
         save_data(
@@ -177,14 +176,16 @@ class CsrcSpider(BaseSpider):
 
     def details_pg_parser(
             self,
-            html_text: str
+            html_text: str,
+            pg_data: dict
     ):
         """
         deatil page parser
+        :param pg_data:
         :param html_text:
         :return:
         """
-        _url_prefix = 'https://www.safe.gov.cn'
+        _url_prefix = '/'.join(pg_data['link'].split('/')[:-1])
 
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
@@ -193,19 +194,17 @@ class CsrcSpider(BaseSpider):
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-        title = ''.join(html.xpath('//div[@class="detail_tit"]//text()')).strip()
+        title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
 
-        texts = html.xpath('//div[@id="content"]//span/text()')
+        texts = html.xpath('//div[@class="detail-news"]//text()')
         cleaned_texts = [clean_text(text) for text in texts]
-        editor = ''.join(html.xpath('//span[@id="wh"]//text()')).strip()
 
-        all_related_links = extract_related_links(html, '//div[@class="list_conr"]//a', _url_prefix)
+        all_related_links = extract_related_links(html, '//div[@class="detail-news"]//p/a', '')
 
         all_appendix = extract_related_links(html, xpath_query, _url_prefix)
         return {
             'title': title,
             'text': '\n'.join(cleaned_texts).strip(),
-            'editor': editor,
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(list(set(all_related_links))),
         }
@@ -241,6 +240,7 @@ class CsrcSpider(BaseSpider):
                     'title': _title,
                     'link': _link,
                     'date': _page_date,
+                    'editor': _editor
                 })
         return res
 
@@ -261,5 +261,8 @@ def extract_related_links(html, xpath, prefix: str):
     :param xpath:
     :return:
     """
-    return [f'{"".join(list(set(link.xpath(".//text()"))))} {prefix}{"".join(link.xpath("@href"))}'.strip() for link in
-            html.xpath(xpath)]
+    return [
+        f'{"".join(list(set(link.xpath(".//text()")))).strip()} {prefix}/{"".join(link.xpath("@href"))}'.strip() for
+        link in
+        html.xpath(xpath)
+    ]

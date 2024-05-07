@@ -23,7 +23,7 @@ MOF_URL_SUFFIX:
   财政部公告: "/bulinggonggao/czbgg/index"  # 财政部公告
 
 # 四川省人民政府 爬虫配置
-# gfxwj   https://www.sc.gov.cn/10462/c102914/gfxwj.shtml	       政府规范性文件
+# gfxwj   https://www.sc.gov.cn/10462/c102914/gfxwj.shtml	     政府规范性文件
 # newzfwj https://www.sc.gov.cn/10462/c103041/newzfwj.shtml        省政府政策文件
 # bmgfxwj https://www.sc.gov.cn/10462/c111304/bmgfxwj.shtml?lion=1 政府信息公开
 SC_GOV:
