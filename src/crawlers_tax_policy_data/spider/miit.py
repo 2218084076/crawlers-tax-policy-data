@@ -1,6 +1,6 @@
 """
-证监会
-http://www.csrc.gov.cn/csrc/c101954/zfxxgk_zdgk.shtml
+工业和信息化部
+https://www.miit.gov.cn/search/wjfb.html?websiteid=110000000000000&pg=&p=&tpl=14&category=51&q=
 """
 import asyncio
 import re
@@ -16,11 +16,11 @@ from crawlers_tax_policy_data.storage.local import save_data
 from crawlers_tax_policy_data.utils.utils import clean_text
 
 
-class CsrcSpider(BaseSpider):
+class MiitSpider(BaseSpider):
     """
-    证监会 spider
+    工业和信息化部 spider
     """
-    folder = 'csrc.gov.cn'
+    folder = 'miit.gov.cn'
 
     def __init__(self):
         super().__init__()
@@ -29,7 +29,7 @@ class CsrcSpider(BaseSpider):
             settings.GOV_OUTPUT_PAHT
         ) / self.folder / f'{self.start_date}-{self.end_date}'
         self.timestamp_format = '%Y-%m-%d'
-        self.url_prefix = 'https://www.safe.gov.cn'
+        self.url_prefix = 'https://www.miit.gov.cn'
 
     @property
     def url(self):
@@ -37,26 +37,7 @@ class CsrcSpider(BaseSpider):
         url
         :return:
         """
-        return 'http://www.csrc.gov.cn/csrc/c101954/zfxxgk_zdgk.shtml'
-
-    @property
-    def headers(self):
-        return {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
-                      "application/signed-exchange;v=b3;q=0.7",
-            "Accept-Encoding": "gzip, deflate",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-            "Cache-Control": "max-age=0",
-            "Connection": "keep-alive",
-            "Cookie": "acw_tc=3adc342617150047531305823e2eda2e180285a83b145408ec7a6fde6b; _gscu_516223281=15004753iobsst"
-                      "13; _gscbrs_516223281=1; _gscs_516223281=15004753prmp7313|pv:1; _yfxkpy_ssid_10008998=%7B%22_yfxk"
-                      "py_firsttime%22%3A%221715004753890%22%2C%22_yfxkpy_lasttime%22%3A%221715004753890%22%2C%22_yfxkpy"
-                      "_visittime%22%3A%221715004753890%22%2C%22_yfxkpy_domidgroup%22%3A%221715004753890%22%2C%22_yfxkpy"
-                      "_domallsize%22%3A%22100%22%2C%22_yfxkpy_cookie%22%3A%2220240506221233896699419945353686%22%7D",
-            "Host": "www.csrc.gov.cn",
-            "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-        }
+        return 'https://www.miit.gov.cn/search/wjfb.html?websiteid=110000000000000&pg=&p=&tpl=14&category=51&q='
 
     @property
     def check_date(self) -> tuple:
@@ -79,12 +60,13 @@ class CsrcSpider(BaseSpider):
         :return:
         """
         self.logger.info(
-            'Start collecting 证监会 %s %s-%s data',
+            'Start collecting 工业和信息化部 %s %s-%s data',
             self.url, self.start_date, self.end_date
         )
         await self.init_page()
         await self.page.goto(self.url)
         await self.page.wait_for_timeout(350)
+        await asyncio.sleep(0.5)
 
         detail_page_li = await self.list_page_parser()
 
@@ -103,27 +85,32 @@ class CsrcSpider(BaseSpider):
         """
         res = []
         html_text = await self.page.content()
-        html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))
+        html: etree._Element = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))
 
-        lr_list: List[etree._Element] = html.xpath('//ul[@class="list_ul"]/table/tbody//tr')[1:]
+        lr_list: List[etree._Element] = html.xpath(
+            '//div[@class="yyfw_box"]//div[@class="jcse-result-box search-list"]'
+        )
         res.extend(self.per_line_parser(lr_list))
 
-        last_pg_date_str = ''.join(lr_list[-1].xpath('.//span[@class="date"]/text()')).strip()
+        last_pg_date_str = extract_pg_date(html=lr_list[-1])
         last_pg_date = datetime.strptime(last_pg_date_str, '%Y-%m-%d').date()
 
         while last_pg_date >= datetime.strptime(self.start_date, '%Y-%m-%d').date():
-            await self.page.locator('//a[@class="nextbtn"]').click()
+            await self.page.locator('//div[@id="pagination"]//a[last()]').click()
             await self.page.wait_for_timeout(350)
+            await asyncio.sleep(0.3)
             next_pg_text = await self.page.content()
 
             next_html: etree._Element = etree.HTML(
                 next_pg_text,
                 etree.HTMLParser(encoding="utf-8", remove_comments=False)
             )
-            nex_lr_list: List[etree._Element] = next_html.xpath('//ul[@class="list_ul"]/table/tbody//tr')[1:]
+            nex_lr_list: List[etree._Element] = next_html.xpath(
+                '//div[@class="yyfw_box"]//div[@class="jcse-result-box search-list"]'
+            )
             res.extend(self.per_line_parser(nex_lr_list))
 
-            _last_pg_date_str = ''.join(nex_lr_list[-1].xpath('.//span[@class="date"]/text()')).strip()
+            _last_pg_date_str = extract_pg_date(nex_lr_list[-1])
             last_pg_date = datetime.strptime(_last_pg_date_str, '%Y-%m-%d').date()
         self.logger.info('There are %s proclamation items', len(res))
         return res
@@ -148,12 +135,9 @@ class CsrcSpider(BaseSpider):
             pg_content = {key: pg_data[key] for key in ['link', 'date', 'title']}
 
         else:
-            repo = await self.async_get_req(
-                url=_link,
-                headers=self.headers
-            )
-            repo.encoding = 'utf-8'
-            html_text = repo.text
+            await self.page.goto(_link)
+            await self.page.wait_for_timeout(350)
+            html_text = await self.page.content()
 
             pg_content = self.details_pg_parser(html_text=html_text, pg_data=pg_data)
 
@@ -164,7 +148,7 @@ class CsrcSpider(BaseSpider):
                 file=detail_page_html_file
             )
 
-            pg_content.update({key: pg_data[key] for key in ['link', 'date', 'editor']})
+            pg_content.update({key: pg_data[key] for key in ['link', 'date']})
             pg_content.update({'html_file': str(detail_page_html_file)})
 
         save_data(
@@ -190,13 +174,13 @@ class CsrcSpider(BaseSpider):
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
 
-        html: etree._Element = etree.HTML(
+        html = etree.HTML(
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-        title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
+        title = ''.join(html.xpath('//h1[@id="con_title"]/text()')).strip()
 
-        texts = html.xpath('//div[@class="detail-news"]//text()')
+        texts = html.xpath('//div[@class="ccontent center"]//text()')
         cleaned_texts = [clean_text(text) for text in texts]
 
         all_related_links = extract_related_links(html, '//div[@class="detail-news"]//p/a', '')
@@ -222,7 +206,7 @@ class CsrcSpider(BaseSpider):
         """
         res = []
         for line in li_list_html:
-            _page_date = ''.join(line.xpath('.//span[@class="date"]/text()')).strip()
+            _page_date = extract_pg_date(html=line)
             try:
                 _date = datetime.strptime(
                     _page_date,
@@ -233,14 +217,12 @@ class CsrcSpider(BaseSpider):
             if (datetime.strptime(self.start_date, self.timestamp_format).date()
                     <= _date
                     <= datetime.strptime(self.end_date, self.timestamp_format).date()):
-                _title = ''.join(line.xpath('./td[@class="info bt"]/a/text()')).strip()
-                _link = ''.join(line.xpath('./td[@class="info bt"]/a/@href')).strip()
-                _editor = ''.join(line.xpath('./td[@class="fwrq"]/text()'))
+                _title = ''.join(line.xpath('./div[@class="search-list-t"]/a/text()')).strip()
+                _link = f'''{self.url_prefix}{''.join(line.xpath('./div[@class="search-list-t"]/a/@href')).strip()}'''
                 res.append({
                     'title': _title,
                     'link': _link,
                     'date': _page_date,
-                    'editor': _editor
                 })
         return res
 
@@ -251,6 +233,7 @@ class CsrcSpider(BaseSpider):
         """
         self.logger.info('start running crawlers...')
         await self.get_public_info()
+        await self.stop_page()
 
 
 def extract_related_links(html, xpath, prefix: str):
@@ -266,3 +249,15 @@ def extract_related_links(html, xpath, prefix: str):
         link in
         html.xpath(xpath)
     ]
+
+
+def extract_pg_date(html):
+    """
+    extract_pages_date
+    :param html:
+    :return:
+    """
+    _pg_span_list = html.xpath('.//div[@class="search-list-b"]//span')
+    date_regex = re.compile(r'\d{4}-\d{2}-\d{2}')
+    _page_date = next((span.text for span in _pg_span_list if date_regex.match(span.text)), None)
+    return _page_date

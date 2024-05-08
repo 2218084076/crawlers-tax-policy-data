@@ -138,7 +138,9 @@ class BaseSpider:
         :return:
         """
         p = await async_playwright().start()
-        self.browser = await p.webkit.launch(headless=settings.HEADLESS)
+        self.browser = await p.webkit.launch(
+            headless=settings.HEADLESS,
+        )
         self.page = await self.browser.new_page()
 
     async def stop_page(self):

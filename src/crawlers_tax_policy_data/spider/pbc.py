@@ -1,6 +1,6 @@
 """
-证监会
-http://www.csrc.gov.cn/csrc/c101954/zfxxgk_zdgk.shtml
+中国人民银行
+http://www.pbc.gov.cn/tiaofasi/144941/3581332/index.html
 """
 import asyncio
 import re
@@ -15,12 +15,14 @@ from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
 from crawlers_tax_policy_data.utils.utils import clean_text
 
+pattern = r"[\u4e00-\u9fa5]+〔\d{4}〕\d+号"
 
-class CsrcSpider(BaseSpider):
+
+class PbcSpider(BaseSpider):
     """
-    证监会 spider
+    中国人民银行 spider
     """
-    folder = 'csrc.gov.cn'
+    folder = 'pbc.gov.cn'
 
     def __init__(self):
         super().__init__()
@@ -29,7 +31,7 @@ class CsrcSpider(BaseSpider):
             settings.GOV_OUTPUT_PAHT
         ) / self.folder / f'{self.start_date}-{self.end_date}'
         self.timestamp_format = '%Y-%m-%d'
-        self.url_prefix = 'https://www.safe.gov.cn'
+        self.url_prefix = 'http://www.pbc.gov.cn'
 
     @property
     def url(self):
@@ -37,7 +39,7 @@ class CsrcSpider(BaseSpider):
         url
         :return:
         """
-        return 'http://www.csrc.gov.cn/csrc/c101954/zfxxgk_zdgk.shtml'
+        return 'http://www.pbc.gov.cn/tiaofasi/144941/3581332/3b3662a6/index'
 
     @property
     def headers(self):
@@ -48,14 +50,15 @@ class CsrcSpider(BaseSpider):
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
             "Cache-Control": "max-age=0",
             "Connection": "keep-alive",
-            "Cookie": "acw_tc=3adc342617150047531305823e2eda2e180285a83b145408ec7a6fde6b; _gscu_516223281=15004753iobsst"
-                      "13; _gscbrs_516223281=1; _gscs_516223281=15004753prmp7313|pv:1; _yfxkpy_ssid_10008998=%7B%22_yfxk"
-                      "py_firsttime%22%3A%221715004753890%22%2C%22_yfxkpy_lasttime%22%3A%221715004753890%22%2C%22_yfxkpy"
-                      "_visittime%22%3A%221715004753890%22%2C%22_yfxkpy_domidgroup%22%3A%221715004753890%22%2C%22_yfxkpy"
-                      "_domallsize%22%3A%22100%22%2C%22_yfxkpy_cookie%22%3A%2220240506221233896699419945353686%22%7D",
-            "Host": "www.csrc.gov.cn",
+            "Cookie": "wzws_sessionid=gDE4MC4xNjkuMTI4LjM5gjc0Y2Y0MaBmOzIQgWExNmRkYQ==; wzws_cid=f497945f305d1dc7bdd35"
+                      "234e263fdbc52278d685b8734c9ae91728c4417172b5d4d480dd9112c2c171fd655eca565aecac993405820c16e037f"
+                      "f87f4e9ea3b657af322907ce0326a479056b774c1045",
+            "Host": "www.pbc.gov.cn",
+            "If-Modified-Since": "Fri, 15 Mar 2024 09:01:55 GMT",
+            "If-None-Match": "W/\"20c902-9931-613af426e66c0\"",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124."
+                          "0.0.0 Safari/537.36"
         }
 
     @property
@@ -78,19 +81,21 @@ class CsrcSpider(BaseSpider):
         get public information
         :return:
         """
+        _url = f'{self.url}1.html'
         self.logger.info(
-            'Start collecting 证监会 %s %s-%s data',
-            self.url, self.start_date, self.end_date
+            'Start collecting 中国人民银行 %s %s-%s data',
+            _url, self.start_date, self.end_date
         )
         await self.init_page()
-        await self.page.goto(self.url)
+        await self.page.goto(_url)
         await self.page.wait_for_timeout(350)
+        await asyncio.sleep(0.5)
 
         detail_page_li = await self.list_page_parser()
 
         if not detail_page_li:
             self.logger.warning(
-                'No data found for 国家外汇管理局 %s for dates %s-%s', self.url, self.start_date, self.end_date
+                'No data found for 国家外汇管理局 %s for dates %s--%s', self.url, self.start_date, self.end_date
             )
 
         for pg in detail_page_li:
@@ -103,28 +108,42 @@ class CsrcSpider(BaseSpider):
         """
         res = []
         html_text = await self.page.content()
-        html = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))
+        html: etree._Element = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))
 
-        lr_list: List[etree._Element] = html.xpath('//ul[@class="list_ul"]/table/tbody//tr')[1:]
+        lr_list: List[etree._Element] = [
+            i for i in html.xpath('//div[@class="portlet"]//table') if
+            '首页' not in i.xpath('.//text()')
+        ]
         res.extend(self.per_line_parser(lr_list))
 
-        last_pg_date_str = ''.join(lr_list[-1].xpath('.//span[@class="date"]/text()')).strip()
+        last_pg_date_str = ''.join(lr_list[-1].xpath('.//span[@class="hui12"]/text()')).strip()
         last_pg_date = datetime.strptime(last_pg_date_str, '%Y-%m-%d').date()
 
+        _p_num = 2
         while last_pg_date >= datetime.strptime(self.start_date, '%Y-%m-%d').date():
-            await self.page.locator('//a[@class="nextbtn"]').click()
+            _next_url = f'{self.url}{_p_num}.html'
+            self.logger.info('Next pages %s', _next_url)
+            await self.page.goto(_next_url)
             await self.page.wait_for_timeout(350)
+            await asyncio.sleep(0.3)
             next_pg_text = await self.page.content()
 
             next_html: etree._Element = etree.HTML(
                 next_pg_text,
                 etree.HTMLParser(encoding="utf-8", remove_comments=False)
             )
-            nex_lr_list: List[etree._Element] = next_html.xpath('//ul[@class="list_ul"]/table/tbody//tr')[1:]
+            nex_lr_list: List[etree._Element] = [
+                i for i in next_html.xpath('//div[@class="portlet"]//table') if
+                '首页' not in i.xpath('.//text()')
+            ]
             res.extend(self.per_line_parser(nex_lr_list))
 
-            _last_pg_date_str = ''.join(nex_lr_list[-1].xpath('.//span[@class="date"]/text()')).strip()
+            _last_pg_date_str = ''.join(
+                nex_lr_list[-1].xpath('.//span[@class="hui12"]/text()')
+            ).strip()
             last_pg_date = datetime.strptime(_last_pg_date_str, '%Y-%m-%d').date()
+            _p_num += 1
+
         self.logger.info('There are %s proclamation items', len(res))
         return res
 
@@ -148,23 +167,27 @@ class CsrcSpider(BaseSpider):
             pg_content = {key: pg_data[key] for key in ['link', 'date', 'title']}
 
         else:
-            repo = await self.async_get_req(
-                url=_link,
-                headers=self.headers
-            )
-            repo.encoding = 'utf-8'
-            html_text = repo.text
+            await self.page.goto(_link)
+            self.logger.info('Detail pageStart collecting %s', _link)
+            await self.page.wait_for_timeout(350)
+            html_text = await self.page.content()
 
             pg_content = self.details_pg_parser(html_text=html_text, pg_data=pg_data)
 
             _title = re.sub(r'\s+', '', pg_data["title"])
+            match = re.search(pattern, pg_content['title'])
+            try:
+                editor = match.group()
+            except AttributeError:
+                editor = ''
             detail_page_html_file = self.output_dir / f'''{pg_data['date']}-{_title}.html'''
             self.save_html(
                 html_content=html_text,
                 file=detail_page_html_file
             )
 
-            pg_content.update({key: pg_data[key] for key in ['link', 'date', 'editor']})
+            pg_content.update({key: pg_data[key] for key in ['link', 'date']})
+            pg_content.update({'editor': editor})
             pg_content.update({'html_file': str(detail_page_html_file)})
 
         save_data(
@@ -190,23 +213,22 @@ class CsrcSpider(BaseSpider):
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
 
-        html: etree._Element = etree.HTML(
+        html = etree.HTML(
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-        title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
 
-        texts = html.xpath('//div[@class="detail-news"]//text()')
+        texts = html.xpath('//td[@class="content"]//text()')
         cleaned_texts = [clean_text(text) for text in texts]
 
-        all_related_links = extract_related_links(html, '//div[@class="detail-news"]//p/a', '')
+        all_related_links = extract_related_links(html, '//td[@class="content"]//p/a', self.url_prefix)
 
-        all_appendix = extract_related_links(html, xpath_query, _url_prefix)
+        all_appendix = extract_related_links(html, xpath_query, self.url_prefix)
         return {
-            'title': title,
             'text': '\n'.join(cleaned_texts).strip(),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(list(set(all_related_links))),
+            'title': ''.join(html.xpath('//td[@align="center"]/h2/text()')).strip()
         }
 
     def per_line_parser(
@@ -222,7 +244,7 @@ class CsrcSpider(BaseSpider):
         """
         res = []
         for line in li_list_html:
-            _page_date = ''.join(line.xpath('.//span[@class="date"]/text()')).strip()
+            _page_date = ''.join(line.xpath('.//span[@class="hui12"]/text()')).strip()
             try:
                 _date = datetime.strptime(
                     _page_date,
@@ -233,14 +255,12 @@ class CsrcSpider(BaseSpider):
             if (datetime.strptime(self.start_date, self.timestamp_format).date()
                     <= _date
                     <= datetime.strptime(self.end_date, self.timestamp_format).date()):
-                _title = ''.join(line.xpath('./td[@class="info bt"]/a/text()')).strip()
-                _link = ''.join(line.xpath('./td[@class="info bt"]/a/@href')).strip()
-                _editor = ''.join(line.xpath('./td[@class="fwrq"]/text()'))
+                _title = ''.join(line.xpath('.//font[@class="newslist_style"]/a/text()')).strip()
+                _link = f'''{self.url_prefix}{''.join(line.xpath('.//font[@class="newslist_style"]/a/@href')).strip()}'''
                 res.append({
                     'title': _title,
                     'link': _link,
                     'date': _page_date,
-                    'editor': _editor
                 })
         return res
 
@@ -251,6 +271,7 @@ class CsrcSpider(BaseSpider):
         """
         self.logger.info('start running crawlers...')
         await self.get_public_info()
+        await self.stop_page()
 
 
 def extract_related_links(html, xpath, prefix: str):
@@ -262,7 +283,19 @@ def extract_related_links(html, xpath, prefix: str):
     :return:
     """
     return [
-        f'{"".join(list(set(link.xpath(".//text()")))).strip()} {prefix}/{"".join(link.xpath("@href"))}'.strip() for
+        f'{"".join(list(set(link.xpath(".//text()")))).strip()} {prefix}{"".join(link.xpath("@href"))}'.strip() for
         link in
         html.xpath(xpath)
     ]
+
+
+def extract_pg_date(html):
+    """
+    extract_pages_date
+    :param html:
+    :return:
+    """
+    _pg_span_list = html.xpath('.//div[@class="search-list-b"]//span')
+    date_regex = re.compile(r'\d{4}-\d{2}-\d{2}')
+    _page_date = next((span.text for span in _pg_span_list if date_regex.match(span.text)), None)
+    return _page_date
