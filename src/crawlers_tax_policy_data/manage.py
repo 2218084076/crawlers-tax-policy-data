@@ -10,6 +10,7 @@ from crawlers_tax_policy_data.spider.gz_gov import GzGovSpider
 from crawlers_tax_policy_data.spider.js_gov import JsGovSpider
 from crawlers_tax_policy_data.spider.miit import MiitSpider
 from crawlers_tax_policy_data.spider.mof import MofSpider
+from crawlers_tax_policy_data.spider.ndrc import NdrcSpider
 from crawlers_tax_policy_data.spider.pbc import PbcSpider
 from crawlers_tax_policy_data.spider.safe_gov import SafeSpider
 from crawlers_tax_policy_data.spider.sc_gov import ScGovSpider
@@ -32,7 +33,8 @@ crawlers = {
     'mof': MofSpider,
     'csrc': CsrcSpider,
     'miit': MiitSpider,
-    'pbc': PbcSpider
+    'pbc': PbcSpider,
+    'ndrc':NdrcSpider
 }
 
 
