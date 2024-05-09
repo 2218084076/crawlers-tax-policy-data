@@ -192,11 +192,20 @@ class MofSpider(BaseSpider):
         else:
             repo = await self.async_get_req(
                 url=_link,
-                headers=self.headers
+                headers={
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                    "Accept-Encoding": "gzip, deflate",
+                    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+                    "Cache-Control": "max-age=0",
+                    "Connection": "keep-alive",
+                    "Cookie": "HMF_CI=ec3ad6a9f24a28620c9354ab86eeebcfb4579e4f9ab91787bce4a395f4c9306345e8edae33ea1d4cd000db1a81f17d3b0b383df035ee9e66f29f5491d18948ca3a; HMY_JC=a3a3716973e6426f421527c35fa8fc393a5acee5525549366e50a17639f87fecf4,; HBB_HC=8e7f3781b48f2ef008cb5b4ef9030624bf924812fb0071362a1ead814fedb87fbd2ab3fb2a09c8c34fcc17fd5222f841e6",
+                    "Host": "tfs.mof.gov.cn",
+                    "Upgrade-Insecure-Requests": "1",
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                }
             )
             repo.encoding = 'utf-8'
             html_text = repo.text
-
             pg_content = self.details_pg_parser(html_text=html_text, pg_url=_link)
 
             _title = re.sub(r'\s+', '', pg_data["title"])

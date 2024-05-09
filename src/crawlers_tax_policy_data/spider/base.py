@@ -27,7 +27,7 @@ class BaseSpider:
         self.browser: playwright.sync_api._generated.Browser | playwright.async_api._generated.Browser | None = None
         self.page: playwright.sync_api._generated.Page | playwright.async_api._generated.Page | None = None
         self.logger = logging.getLogger(f'{__name__}.{self.__class__.__name__}')
-        self.file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt', '.wps']
+        self.file_types = ['.pdf', '.xls', '.xlsx', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.odt', '.wps', '.ofd']
         self.pattern = r'^\S+〔\d+〕\d+号$'
 
     @property
@@ -121,6 +121,7 @@ class BaseSpider:
         self.logger.info('use async request get %s', url)
         async with httpx.AsyncClient() as client:
             repo = await client.get(url=url, **kwargs)
+            self.logger.info(repo.status_code)
         return repo
 
     def sync_init_page(self):

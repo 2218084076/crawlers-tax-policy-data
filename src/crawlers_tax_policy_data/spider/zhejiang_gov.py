@@ -75,7 +75,10 @@ class ZJSpider(BaseSpider):
                          (start_date, end_date))
         await self.init_page()
         await self.page.goto(self.url)
-        await self.page.wait_for_timeout(400)
+        await asyncio.sleep(0.5)
+        await self.page.locator('(//a[@id="zh_click_s"])[1]').click()
+        await self.page.wait_for_timeout(350)
+
         self.logger.info('get %s', self.page)
         detail_pages = await self.parse_news_list(start_date=start_date, end_date=end_date)
 
@@ -88,7 +91,10 @@ class ZJSpider(BaseSpider):
             _link = _p.get('link')
             await self.init_page()
             await self.page.goto(_link)
-            await self.page.wait_for_timeout(400)
+            await asyncio.sleep(0.5)
+            await self.page.locator('(//a[@id="zh_click_s"])[1]').click()
+            await asyncio.sleep(0.3)
+
             html_text = await self.page.content()
             detail_data = self.parse_detail_page(html_text)
 
@@ -143,7 +149,7 @@ class ZJSpider(BaseSpider):
                         <= _date
                         <= datetime.strptime(end_date, '%Y-%m-%d').date()
                 ):
-                    _title = clean_text(''.join(row.xpath('./span[@class="xzgfx_list_title2"]/a/text()')))
+                    _title = ''.join(row.xpath('./span[@class="xzgfx_list_title2"]/a/text()')).strip()
                     _link = 'https://www.zj.gov.cn' + clean_text(
                         ''.join(row.xpath('./span[@class="xzgfx_list_title2"]/a/@href')))
                     res.append({'title': _title, 'link': _link, 'date': _page_date})

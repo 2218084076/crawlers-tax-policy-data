@@ -37,7 +37,7 @@ class NdrcSpider(BaseSpider):
         self.start_date, self.end_date = self.check_date
         self.output_dir = Path(
             settings.GOV_OUTPUT_PAHT
-        ) / self.folder / f'{self.start_date}-{self.end_date}'
+        ) / self.folder / f'{self.start_date}-{self.end_date}'.replace('/', '')
         self.timestamp_format = '%Y/%m/%d'
         self.url_prefix = 'http://www.pbc.gov.cn'
 
@@ -49,6 +49,7 @@ class NdrcSpider(BaseSpider):
         """
         return 'https://www.ndrc.gov.cn/xxgk/zcfb'
 
+    @property
     def headers(self):
         return {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
@@ -121,7 +122,7 @@ class NdrcSpider(BaseSpider):
             )
 
         for pg in detail_page_li:
-            await self.details_pg_processor(pg_data=pg)
+            await self.details_pg_processor(pg_data=pg, spider_name=spider_name)
 
     async def list_page_parser(self, crawlers: dict):
         """
@@ -165,18 +166,12 @@ class NdrcSpider(BaseSpider):
         self.logger.info('There are %s proclamation items', len(res))
         return res
 
-    async def details_pg_processor(self, pg_data: dict):
+    async def details_pg_processor(self, pg_data: dict, spider_name: str):
         """
         Detail page processor
 
-        Parse each detail page to extract news data
-        The `pg_data` format is
-        {
-            'title': _title,
-            'link': _link,
-            'date': _page_date,
-        }
         :param pg_data:
+        :param spider_name:
         :return:
         """
         _link = pg_data['link']
@@ -191,10 +186,7 @@ class NdrcSpider(BaseSpider):
             )
             respo.encoding = 'utf-8'
             html_text = respo.text
-            await self.page.goto(_link)
             self.logger.info('Detail pageStart collecting %s', _link)
-            await self.page.wait_for_timeout(350)
-            html_text = await self.page.content()
 
             pg_content = self.details_pg_parser(html_text=html_text, pg_data=pg_data)
 
@@ -204,7 +196,11 @@ class NdrcSpider(BaseSpider):
                 editor = match.group()
             except AttributeError:
                 editor = ''
-            detail_page_html_file = self.output_dir / f'''{pg_data['date']}/{_title}.html'''
+            detail_page_html_file = (
+                    self.output_dir /
+                    crawlers_categories[spider_name]['name'] /
+                    f'''{pg_data['date']}/{_title}.html'''.replace('/', '')
+            )
             self.save_html(
                 html_content=html_text,
                 file=detail_page_html_file
@@ -216,8 +212,11 @@ class NdrcSpider(BaseSpider):
 
         save_data(
             content=pg_content,
-            file_path=self.output_dir / f"{self.start_date}/{self.end_date}-public"
-                                        f"-information.csv"
+            file_path=(
+                    self.output_dir /
+                    crawlers_categories[spider_name]['name'] /
+                    f"{self.start_date}/{self.end_date}-public-information.csv".replace('/','-')
+            )
         )
         await asyncio.sleep(0.5)
 
@@ -227,7 +226,7 @@ class NdrcSpider(BaseSpider):
             pg_data: dict
     ):
         """
-        deatil page parser
+        details page parser
         :param pg_data:
         :param html_text:
         :return:
@@ -241,18 +240,18 @@ class NdrcSpider(BaseSpider):
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-
-        texts = html.xpath('//td[@class="content"]//text()')
+        title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
+        texts = html.xpath('//div[@class="article_l"]//text()')
         cleaned_texts = [clean_text(text) for text in texts]
 
-        all_related_links = extract_related_links(html, '//td[@class="content"]//p/a', self.url_prefix)
+        all_related_links = ''
 
-        all_appendix = extract_related_links(html, xpath_query, self.url_prefix)
+        all_appendix = extract_related_links(html, xpath_query, _url_prefix)
         return {
             'text': '\n'.join(cleaned_texts).strip(),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
-            'related_documents': ',\n'.join(list(set(all_related_links))),
-            'title': ''.join(html.xpath('//td[@align="center"]/h2/text()')).strip()
+            'related_documents': all_related_links,
+            'title': title
         }
 
     def per_line_parser(
@@ -316,7 +315,8 @@ def extract_related_links(html, xpath, prefix: str):
     :return:
     """
     return [
-        f'{"".join(list(set(link.xpath(".//text()")))).strip()} {prefix}{"".join(link.xpath("@href"))}'.strip() for
+        f'{"".join(list(set(link.xpath(".//text()")))).strip()} {"".join(link.xpath("@href")).replace("./", f"""{prefix}/""")}'.strip()
+        for
         link in
         html.xpath(xpath)
     ]
