@@ -34,7 +34,7 @@ crawlers = {
     'csrc': CsrcSpider,
     'miit': MiitSpider,
     'pbc': PbcSpider,
-    'ndrc':NdrcSpider
+    'ndrc': NdrcSpider
 }
 
 

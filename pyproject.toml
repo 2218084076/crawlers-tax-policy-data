@@ -51,7 +51,8 @@ disable = [
     "fixme",
     "duplicate-code",
     "arguments-differ",
-    "line-too-long"
+    "line-too-long",
+    "logging-too-many-args"
 ]
 good-names = [
     "pattern"
