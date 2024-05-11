@@ -70,31 +70,30 @@ class ZJSpider(BaseSpider):
         :return:
         """
         start_date, end_date = self.check_date
-        self.logger.info('Start collecting `%s` <%s> data',
+        self.logger.info('Start collecting `%s` %s--%s data',
                          '浙江省人民政府 法规政策 https://www.zj.gov.cn/col/col1229697826/index.html',
-                         (start_date, end_date))
+                         start_date, end_date)
         await self.init_page()
-        await self.page.goto(self.url)
-        await asyncio.sleep(0.5)
-        await self.page.locator('(//a[@id="zh_click_s"])[1]').click()
-        await self.page.wait_for_timeout(350)
+        respo = await self.page.goto(self.url)
+        self.logger.info('%s %s', self.url, respo.status)
+        await self.page.wait_for_timeout(3000)
+        await self.page.locator('//div[@class="langue lf"]//a[@id="zh_click_s"]').click()
+        await self.page.wait_for_timeout(3000)
 
-        self.logger.info('get %s', self.page)
         detail_pages = await self.parse_news_list(start_date=start_date, end_date=end_date)
 
         if not detail_pages:
-            self.logger.warning('浙江省人民政府 法规政策 > 行政规范性文件 > 省政府 > 有效 <%s> no data',
-                                (start_date, end_date))
+            self.logger.warning('浙江省人民政府 法规政策 > 行政规范性文件 > 省政府 > 有效 %s--%s no data',
+                                start_date, end_date)
             return ''
 
         for _p in detail_pages:
             _link = _p.get('link')
-            await self.init_page()
-            await self.page.goto(_link)
-            await asyncio.sleep(0.5)
-            await self.page.locator('(//a[@id="zh_click_s"])[1]').click()
-            await asyncio.sleep(0.3)
-
+            respo = await self.page.goto(_link)
+            self.logger.info('parse detail_page text data %s %s', _link, respo.status)
+            await self.page.wait_for_timeout(350)
+            await self.page.locator('//div[@class="langue lf"]//a[@id="zh_click_s"]').click()
+            await self.page.wait_for_timeout(3000)
             html_text = await self.page.content()
             detail_data = self.parse_detail_page(html_text)
 
@@ -110,7 +109,8 @@ class ZJSpider(BaseSpider):
             detail_data.update({
                 'link': _link,
                 'date': _p['date'],
-                'html_file': str(detail_page_html_file)
+                'html_file': str(detail_page_html_file),
+                'editor': _p['editor']
             })
 
             save_data(
@@ -120,7 +120,13 @@ class ZJSpider(BaseSpider):
                                                                                            f'-information.csv'
             )
             await asyncio.sleep(0.5)
+        self.logger.info('Stop all pages')
         await self.stop_page()
+        self.logger.info(
+            '`%s`  %s--%s  data collection completed!',
+            '浙江省人民政府 法规政策 https://www.zj.gov.cn',
+            start_date, end_date
+        )
 
     async def parse_news_list(self, start_date: str, end_date: str):
         """
@@ -152,7 +158,12 @@ class ZJSpider(BaseSpider):
                     _title = ''.join(row.xpath('./span[@class="xzgfx_list_title2"]/a/text()')).strip()
                     _link = 'https://www.zj.gov.cn' + clean_text(
                         ''.join(row.xpath('./span[@class="xzgfx_list_title2"]/a/@href')))
-                    res.append({'title': _title, 'link': _link, 'date': _page_date})
+                    res.append({
+                        'title': _title,
+                        'link': _link,
+                        'date': _page_date,
+                        'editor': ''.join(row.xpath('./span[@class="xzgfx_list_title3"]/text()')).strip()
+                    })
 
         items_list = html.xpath('//div[@class="xzgfx_list_item cf"]')
         parse_news_items(items_list)
@@ -171,7 +182,6 @@ class ZJSpider(BaseSpider):
             last_item_date_str = ''.join(next_items_list[-1].xpath('./span[@class="xzgfx_list_title5"]/text()')).strip()
             last_item_date = datetime.strptime(last_item_date_str, '%Y-%m-%d').date()
 
-        await self.stop_page()
         return res
 
     def parse_detail_page(self, html_text: str):
@@ -181,18 +191,17 @@ class ZJSpider(BaseSpider):
         :return:
         """
         res = {}
-        self.logger.info('parse detail_page text data')
+
         html = etree.HTML(
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
-        title = clean_text(''.join(html.xpath('//td[@class="wzbt"]/text()'))).strip()
+        title = ''.join(html.xpath('//title//text()')).strip()
         # 文号
-        text = ''.join(html.xpath('//tr[@class="xxgk-info-wh"]//text()'))
         editor = ''.join(html.xpath('//tr[@class="xxgk-info-wh"]/td[1]/text()')).strip() if self.is_match(
             ''.join(html.xpath('//tr[@class="xxgk-info-wh"]/td[1]/text()')).strip()) else ''
 
-        state = ''.join(html.xpath('//table[@class="xxgk"]//tr[4]/td/text()')).strip()
+        state = ''.join(html.xpath('//meta[@name="ColumnName"]/@content')).strip()
 
         related_documents = ''
         texts = html.xpath('//div[@id="zoom"]//p//text()')
@@ -204,11 +213,7 @@ class ZJSpider(BaseSpider):
             'editor': editor,
             'state': state,
             # 附件
-            'appendix': ',\n'.join([
-                clean_text(''.join(a.xpath('./text()'))) + ' - https://www.zj.gov.cn' + clean_text(
-                    ''.join(a.xpath('@href')))
-                for a in html.xpath('//div[@id="zoom"]//p')[-1].xpath('.//a')
-            ]),
+            'appendix': ',\n'.join(self.extract_links(html=html, xpath='//div[@id="zoom"]//p/a')),
             'related_documents': related_documents,
         })
 
@@ -224,3 +229,14 @@ class ZJSpider(BaseSpider):
 
     def is_match(self, text):
         return bool(re.match(self.pattern, text))
+
+    @staticmethod
+    def extract_links(html, xpath):
+        """
+        Extract the links according to the given XPath
+        :param html:
+        :param xpath:
+        :return:
+        """
+        return [''.join(link.xpath('.//text()')) + ' https://www.zj.gov.cn' + ''.join(link.xpath('@href')) for link in
+                html.xpath(xpath)]
