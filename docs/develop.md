@@ -1,10 +1,19 @@
-# ¿ª·¢ÎÄµµ
+- [å¼€å‘æ–‡æ¡£](#%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3)
+    - [éœ€æ±‚](#%E9%9C%80%E6%B1%82)
+        - [é‡‡é›†æ•°æ®æ ¼å¼](#%E9%87%87%E9%9B%86%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F)
+    - [éƒ¨ç½²æŒ‡å—](#%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97)
+        - [ä¾èµ–ç®¡ç†](#%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86)
+        - [åŠ¨æ€é…ç½®](#%E5%8A%A8%E6%80%81%E9%85%8D%E7%BD%AE)
+    - [ä½¿ç”¨æŒ‡å—](#%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)
+    - [å·²æä¾›çš„çˆ¬è™«ç½‘ç«™](#%E5%B7%B2%E6%8F%90%E4%BE%9B%E7%9A%84%E7%88%AC%E8%99%AB%E7%BD%91%E7%AB%99)
 
-## ĞèÇó
+# å¼€å‘æ–‡æ¡£
 
-»ñÈ¡ÕşÎñÆ½Ì¨ÖĞ¹«¿ª¹«¸æÖ¸¶¨×Ö¶ÎÊı¾İ
+## éœ€æ±‚
 
-### ²É¼¯Êı¾İ¸ñÊ½
+è·å–æ”¿åŠ¡å¹³å°ä¸­å…¬å¼€å…¬å‘ŠæŒ‡å®šå­—æ®µæ•°æ®
+
+### é‡‡é›†æ•°æ®æ ¼å¼
 
 ```json
 {
@@ -20,76 +29,76 @@
 }
 ```
 
-- link Á´½Ó
-- title ±êÌâ
-- editor ÎÄºÅ
-- state ×´Ì¬
-- issue date ·¢ÎÄÈÕÆÚ
-- tax type Ë°ÖÖ
-- text ÕıÎÄ
-- appendix ¸½¼ş£¨Á´½ÓÏÂÔØ£©
-- related documents Ïà¹ØÎÄ¼ş£¨Á´½Ó£©
+- link é“¾æ¥
+- title æ ‡é¢˜
+- editor æ–‡å·
+- state çŠ¶æ€
+- issue date å‘æ–‡æ—¥æœŸ
+- tax type ç¨ç§
+- text æ­£æ–‡
+- appendix é™„ä»¶ï¼ˆé“¾æ¥ä¸‹è½½ï¼‰
+- related documents ç›¸å…³æ–‡ä»¶ï¼ˆé“¾æ¥ï¼‰
 
-## ²¿ÊğÖ¸ÄÏ
+## éƒ¨ç½²æŒ‡å—
 
-### ÒÀÀµ¹ÜÀí
+### ä¾èµ–ç®¡ç†
 
-> ±¾ÏîÄ¿Ê¹ÓÃ `poetry` ½øĞĞÒÀÀµ¹ÜÀí
+> æœ¬é¡¹ç›®ä½¿ç”¨ `poetry` è¿›è¡Œä¾èµ–ç®¡ç†
 >
-> ÆäÖĞÒÀÀµ¶¼¼ÇÂ¼ÔÚ [pyproject.toml](..%2Fpyproject.toml) ÎÄ¼şÖĞ
+> å…¶ä¸­ä¾èµ–éƒ½è®°å½•åœ¨ [pyproject.toml](..%2Fpyproject.toml) æ–‡ä»¶ä¸­
 >
->ÔÚÏîÄ¿¸ùÄ¿Â¼ÖĞÖ´ĞĞ
+>åœ¨é¡¹ç›®æ ¹ç›®å½•ä¸­æ‰§è¡Œ
 >
 > ```bash
-> # ÔÚÏµÍ³»·¾³ÖĞ°²×°  `poetry` ¿â
+> # åœ¨ç³»ç»Ÿç¯å¢ƒä¸­å®‰è£…  `poetry` åº“
 > pip install -U poetry 
-> # °²×°ËùÓĞÒÀÀµ
+> # å®‰è£…æ‰€æœ‰ä¾èµ–
 > poetry install
-> # ½øÈë poetry ´´½¨µÄĞéÄâ python »·¾³
+> # è¿›å…¥ poetry åˆ›å»ºçš„è™šæ‹Ÿ python ç¯å¢ƒ
 > poetry shell
-> # ×¢: ±¾ÏîÄ¿ÒÀÀµÖĞÊ¹ÓÃÁË playwright ä¯ÀÀÆ÷×Ô¶¯»¯¹¤¾ß, ÒÀÀµ playwright ä¯ÀÀÆ÷Çı¶¯, 
-> # ±ØÒªÊ±ĞèÊÖ¶¯ `playwright install` °²×°ä¯ÀÀÆ÷Çı¶¯
+> # æ³¨: æœ¬é¡¹ç›®ä¾èµ–ä¸­ä½¿ç”¨äº† playwright æµè§ˆå™¨è‡ªåŠ¨åŒ–å·¥å…·, ä¾èµ– playwright æµè§ˆå™¨é©±åŠ¨, 
+> # å¿…è¦æ—¶éœ€æ‰‹åŠ¨ `playwright install` å®‰è£…æµè§ˆå™¨é©±åŠ¨
 > ``` 
 
-- µ½´ËÎªÖ¹, ÏîÄ¿ËùÓĞËùĞèÒÀÀµÈ«²¿°²×°Íê±Ï
+- åˆ°æ­¤ä¸ºæ­¢, é¡¹ç›®æ‰€æœ‰æ‰€éœ€ä¾èµ–å…¨éƒ¨å®‰è£…å®Œæ¯•
 
-### ¶¯Ì¬ÅäÖÃ
+### åŠ¨æ€é…ç½®
 
-> ±¾ÏîÄ¿Ê¹ÓÃ `dynaconf` À´ÊµÏÖ¶¯Ì¬ÅäÖÃ
+> æœ¬é¡¹ç›®ä½¿ç”¨ `dynaconf` æ¥å®ç°åŠ¨æ€é…ç½®
 
-±¾µØ²¿ÊğÊ±, ½¨ÒéÊ¹ÓÃÊ¹ÓÃ±¾µØÅäÖÃ, Ìæ»»ÏîÄ¿Ä¬ÈÏÅäÖÃ,
-ÅäÖÃ·½·¨ÈçÏÂ:
+æœ¬åœ°éƒ¨ç½²æ—¶, å»ºè®®ä½¿ç”¨ä½¿ç”¨æœ¬åœ°é…ç½®, æ›¿æ¢é¡¹ç›®é»˜è®¤é…ç½®,
+é…ç½®æ–¹æ³•å¦‚ä¸‹:
 
-- ¿É°´ÕÕ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
-  ÎÄ¼ş¸ñÊ½, ÔÚÆäÍ¬¼¶£¨¼´Óë [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
-  Í¬¼¶Â·¾¶£©´´½¨ `settings.local.yml` ÎÄ¼ş
-- `settings.local.yml` ÎÄ¼ş»á×Ô¶¯Ìæ»»µô [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
-  ÖĞÄ¬ÈÏÅäÖÃ, ²¢ÇÒ»á±» `git ignore` ²»»á±» git Ìá½»µ½Ô¶³Ì²Ö¿â
+- å¯æŒ‰ç…§ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  æ–‡ä»¶æ ¼å¼, åœ¨å…¶åŒçº§ï¼ˆå³ä¸ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  åŒçº§è·¯å¾„ï¼‰åˆ›å»º `settings.local.yml` æ–‡ä»¶
+- `settings.local.yml` æ–‡ä»¶ä¼šè‡ªåŠ¨æ›¿æ¢æ‰ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  ä¸­é»˜è®¤é…ç½®, å¹¶ä¸”ä¼šè¢« `git ignore` ä¸ä¼šè¢« git æäº¤åˆ°è¿œç¨‹ä»“åº“
 -
 
-## Ê¹ÓÃÖ¸ÄÏ
+## ä½¿ç”¨æŒ‡å—
 
-- **ÔËĞĞÅÀ³æÇ°ÇëÈ·ÈÏ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml) ÅäÖÃÎÄ¼şµÄ `START_DATE`
-  ºÍ `END_DATE` ²ÎÊıÊÇ·ñÎªÄúÏëÒª²É¼¯µÄÈÕÆÚ**
-- Ä¬ÈÏ `START_DATE` ºÍ `END_DATE` Á½¸ö²ÎÊıÎª¿Õ, ¼´Îª´Óµ±Ç°ÈÕÆÚ¿ªÊ¼²É¼¯,
-  ²ÎÊıËµÃ÷ÈçÏÂ£º
-- Õë¶Ô `²ÆÕş²¿` www.mof.gov.cn
-  ÅÀ³æ£¬ÓÉÓÚÈı¸öÒ³Ãæ½âÎöÂß¼­Í¨ÓÃ£¬ĞèÍ¨¹ı [settings.yml](src%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
-  ÖĞµÄ `MOF_URL_SUFFIX` ²ÎÊıÖ¸¶¨µ±¸öÅÀ³æÔËĞĞ
-    - ÆäÒªÏëµ¥µ¥¶ÀÔËĞĞÒ»¸öÍøÕ¾£¬ÔòĞè×¢ÊÍµôÆäËûÁ½¸öÍøÕ¾µÄÅäÖÃ£¬È«²¿´ò¿ªÊ±£¬ÅÀ³æ»áÒÀ´Î²É¼¯Ö¸¶¨ÈÕÆÚ·¶Î§ÄÚÊı¾İ¡£
+- **è¿è¡Œçˆ¬è™«å‰è¯·ç¡®è®¤ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml) é…ç½®æ–‡ä»¶çš„ `START_DATE`
+  å’Œ `END_DATE` å‚æ•°æ˜¯å¦ä¸ºæ‚¨æƒ³è¦é‡‡é›†çš„æ—¥æœŸ**
+- é»˜è®¤ `START_DATE` å’Œ `END_DATE` ä¸¤ä¸ªå‚æ•°ä¸ºç©º, å³ä¸ºä»å½“å‰æ—¥æœŸå¼€å§‹é‡‡é›†,
+  å‚æ•°è¯´æ˜å¦‚ä¸‹ï¼š
+- é’ˆå¯¹ `è´¢æ”¿éƒ¨` www.mof.gov.cn
+  çˆ¬è™«ï¼Œç”±äºä¸‰ä¸ªé¡µé¢è§£æé€»è¾‘é€šç”¨ï¼Œéœ€é€šè¿‡ [settings.yml](src%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  ä¸­çš„ `MOF_URL_SUFFIX` å‚æ•°æŒ‡å®šå½“ä¸ªçˆ¬è™«è¿è¡Œ
+    - å…¶è¦æƒ³å•å•ç‹¬è¿è¡Œä¸€ä¸ªç½‘ç«™ï¼Œåˆ™éœ€æ³¨é‡Šæ‰å…¶ä»–ä¸¤ä¸ªç½‘ç«™çš„é…ç½®ï¼Œå…¨éƒ¨æ‰“å¼€æ—¶ï¼Œçˆ¬è™«ä¼šä¾æ¬¡é‡‡é›†æŒ‡å®šæ—¥æœŸèŒƒå›´å†…æ•°æ®ã€‚
     - ```yaml
        MOF_URL_SUFFIX:
-          ²ÆÕşÎÄ¸æ: "/caizhengwengao/index"  # ²ÆÕşÎÄ¸æ
-          ²ÆÕş²¿Áî: "/bulinggonggao/czbl/index"  # ²ÆÕş²¿Áî
-          ²ÆÕş²¿¹«¸æ: "/bulinggonggao/czbgg/index"  # ²ÆÕş²¿¹«¸æ
+          è´¢æ”¿æ–‡å‘Š: "/caizhengwengao/index"  # è´¢æ”¿æ–‡å‘Š
+          è´¢æ”¿éƒ¨ä»¤: "/bulinggonggao/czbl/index"  # è´¢æ”¿éƒ¨ä»¤
+          è´¢æ”¿éƒ¨å…¬å‘Š: "/bulinggonggao/czbgg/index"  # è´¢æ”¿éƒ¨å…¬å‘Š
     ```
 
 ```yaml
-# ĞèÒª²É¼¯µÄÈÕÆÚ£¬
-# ×¢£ºÈÕÆÚ¸ñÊ½Òª°´ÕÕ `ÄêÔÂÈÕ` µÄĞÎÊ½ ÀıÈç `20240409` ³ÌĞòÖĞÒÑ¶¨ÒåÁË¹Ì¶¨µÄ date ½âÎöÂß¼­
-# ´íÎóÊ¾·¶£º2024-01-12¡¢2024Äê1ÔÂ2ÈÕ
-# ÒªÏëÖ¸¶¨²É¼¯Ä³Ììµ¥ÈÕµÄÊı¾İ£¬ÔòÖ»ĞèÖ¸¶¨ start_date »òÕß end_date
-# start_date ºÍ end_date ¶¼ÉèÖÃÎª¿Õ£¬Ôò×Ô¶¯²É¼¯µ±Ç°ÈÕÆÚÄÚÊı¾İ
+# éœ€è¦é‡‡é›†çš„æ—¥æœŸï¼Œ
+# æ³¨ï¼šæ—¥æœŸæ ¼å¼è¦æŒ‰ç…§ `å¹´æœˆæ—¥` çš„å½¢å¼ ä¾‹å¦‚ `20240409` ç¨‹åºä¸­å·²å®šä¹‰äº†å›ºå®šçš„ date è§£æé€»è¾‘
+# é”™è¯¯ç¤ºèŒƒï¼š2024-01-12ã€2024å¹´1æœˆ2æ—¥
+# è¦æƒ³æŒ‡å®šé‡‡é›†æŸå¤©å•æ—¥çš„æ•°æ®ï¼Œåˆ™åªéœ€æŒ‡å®š start_date æˆ–è€… end_date
+# start_date å’Œ end_date éƒ½è®¾ç½®ä¸ºç©ºï¼Œåˆ™è‡ªåŠ¨é‡‡é›†å½“å‰æ—¥æœŸå†…æ•°æ®
 ```
 
 ```bash
@@ -102,60 +111,80 @@ Options:
   --help         Show this message and exit.
 
 Commands:
-  crawlers-gov  Õş¸®ÍøÕ¾ÅÀ³æ, ÇëÊ¹ÓÃ `crawlers-gov --help` »ñÈ¡ÏêÏ¸ËµÃ÷
-  run-all       ÖğÒ»ÔËĞĞÃ¿¸öÅÀ³æ, ÇëÔÚÅäÖÃÎÄ¼şÖĞÈ·ÈÏ²É¼¯ÈÕÆÚ! 
+  crawlers-gov  æ”¿åºœç½‘ç«™çˆ¬è™«, è¯·ä½¿ç”¨ `crawlers-gov --help` è·å–è¯¦ç»†è¯´æ˜
+  run-all       é€ä¸€è¿è¡Œæ¯ä¸ªçˆ¬è™«, è¯·åœ¨é…ç½®æ–‡ä»¶ä¸­ç¡®è®¤é‡‡é›†æ—¥æœŸ! 
 
 ```
 
 ```bash
 Usage: cmdline.py crawlers-gov [OPTIONS]
 
-  Õş¸®ÍøÕ¾ÅÀ³æ£¬ÇëÊ¹ÓÃ `crawlers-gov --help` »ñÈ¡ÏêÏ¸ËµÃ÷
+  æ”¿åºœç½‘ç«™çˆ¬è™«ï¼Œè¯·ä½¿ç”¨ `crawlers-gov --help` è·å–è¯¦ç»†è¯´æ˜
 
-  ÏÂÁĞÊÇ¿ÉÌá¹©µÄ²É¼¯·½°¸£º ÇëÊ¹ÓÃ -c »ò --city ²ÎÊıÖ¸¶¨ÅÀ³æ£¬
+  ä¸‹åˆ—æ˜¯å¯æä¾›çš„é‡‡é›†æ–¹æ¡ˆï¼š è¯·ä½¿ç”¨ -c æˆ– --city å‚æ•°æŒ‡å®šçˆ¬è™«ï¼Œ
 
-  ²¢ÔÚ config/settings `START_DATE`ºÍ`END_DATE` ÖĞÈ·ÈÏĞèÒª²É¼¯µÄÈÕÆÚ£¬Ä¬ÈÏ²É¼¯µ±ÈÕµÄÊı¾İ
+  å¹¶åœ¨ config/settings `START_DATE`å’Œ`END_DATE` ä¸­ç¡®è®¤éœ€è¦é‡‡é›†çš„æ—¥æœŸï¼Œé»˜è®¤é‡‡é›†å½“æ—¥çš„æ•°æ®
 
   ----------------------------------------------------------------
-  gov [ÖĞÑëÈËÃñÕş¸®](www.gov.cn)
+  gov [ä¸­å¤®äººæ°‘æ”¿åºœ](www.gov.cn)
 
-  sz-gov [ÉîÛÚÕş¸®ÔÚÏß](www.sz.gov.cn)
+  sz-gov [æ·±åœ³æ”¿åºœåœ¨çº¿](www.sz.gov.cn)
 
-  sh-gov [ÉÏº£ÊĞÈËÃñÕş¸®](www.shanghai.gov.cn)
+  sh-gov [ä¸Šæµ·å¸‚äººæ°‘æ”¿åºœ](www.shanghai.gov.cn)
 
-  zj-gov [Õã½­Ê¡ÈËÃñÕş¸®](www.zj.gov.cn)
+  zj-gov [æµ™æ±Ÿçœäººæ°‘æ”¿åºœ](www.zj.gov.cn)
 
-  gd-gov-latest-policy [¹ã¶«Ê¡Õş¸® > ×îĞÂÕş²ß](www.gd.gov.cn/gdywdt)
+  gd-gov-latest-policy [å¹¿ä¸œçœæ”¿åºœ > æœ€æ–°æ”¿ç­–](www.gd.gov.cn/gdywdt)
 
-  gd-gov-doc-lib [¹ã¶«Ê¡Õş¸® > ÎÄ¼ş¿â](www.gd.gov.cn/zwgk/wjk/qbwj/)
+  gd-gov-doc-lib [å¹¿ä¸œçœæ”¿åºœ > æ–‡ä»¶åº“](www.gd.gov.cn/zwgk/wjk/qbwj/)
 
-  gz-gov [¹ãÖİÊĞĞĞÕş¹æ·¶ĞÔÎÄ¼şÍ³Ò»·¢²¼Æ½Ì¨](www.gz.gov.cn/gfxwj/)
+  gz-gov [å¹¿å·å¸‚è¡Œæ”¿è§„èŒƒæ€§æ–‡ä»¶ç»Ÿä¸€å‘å¸ƒå¹³å°](www.gz.gov.cn/gfxwj/)
 
-  js-gov [½­ËÕÊ¡ÈËÃñÕş¸®](jiangsu.gov.cn)
+  js-gov [æ±Ÿè‹çœäººæ°‘æ”¿åºœ](jiangsu.gov.cn)
 
-  bj-gov [±±¾©ÊĞÈËÃñÕş¸®](beijing.gov.cn)
+  bj-gov [åŒ—äº¬å¸‚äººæ°‘æ”¿åºœ](beijing.gov.cn)
 
-  sc-gov [ËÄ´¨Ê¡ÈËÃñÕş¸®](sc.gov.cn)
+  sc-gov [å››å·çœäººæ°‘æ”¿åºœ](sc.gov.cn)
 
-  safe [¹ú¼ÒÍâ»ã¹ÜÀí¾Ö](safe.gov.cn)
+  safe [å›½å®¶å¤–æ±‡ç®¡ç†å±€](safe.gov.cn)
 
-  mof [²ÆÕş²¿ ²ÆÕşÎÄ¸æ;²ÆÕş²¿Áî;²ÆÕş²¿¹«¸æ](mof.gov.cn)
+  mof [è´¢æ”¿éƒ¨ è´¢æ”¿æ–‡å‘Š;è´¢æ”¿éƒ¨ä»¤;è´¢æ”¿éƒ¨å…¬å‘Š](mof.gov.cn)
   ----------------------------------------------------------------
 
 Options:
-  -c, --city TEXT  Ñ¡ÔñÒª²É¼¯µÄÍøÕ¾  [default: gov]
+  -c, --city TEXT  é€‰æ‹©è¦é‡‡é›†çš„ç½‘ç«™  [default: gov]
   --help           Show this message and exit.
 ```
 
-ÀıÈç:
+ä¾‹å¦‚:
 
 ```bash
-# ²É¼¯ [ÖĞÑëÈËÃñÕş¸®](www.gov.cn/zhengce/xxgk/) ÍøÕ¾Êı¾İ
+# é‡‡é›† [ä¸­å¤®äººæ°‘æ”¿åºœ](www.gov.cn/zhengce/xxgk/) ç½‘ç«™æ•°æ®
 python .\src\crawlers_tax_policy_data\cmdline.py crawlers-gov -c gov
-# ÖğÒ»ÔËĞĞÃ¿¸öÅÀ³æ
+# é€ä¸€è¿è¡Œæ¯ä¸ªçˆ¬è™«
 python .\src\crawlers_tax_policy_data\cmdline.py run-all
 ```
 
+## å·²æä¾›çš„çˆ¬è™«ç½‘ç«™
 
+- çˆ¬è™«ç®¡ç†å™¨ï¼š[manage.py](src%2Fcrawlers_tax_policy_data%2Fmanage.py)
 
+| Alias                | Spider Class                                                                                                              | Description                                                                          |
+|:---------------------|:--------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| gov                  | GovSpider               <br/>   [gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fgov.py)                                | ä¸­å¤®äººæ°‘æ”¿åºœ                                                                               |
+| sz-gov               | ShenZhengSpider         <br/>[shenzhen.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fshenzhen.py)                         | æ·±åœ³å¸‚äººæ°‘æ”¿åºœ                                                                              |
+| sh-gov               | ShangHaiGovSpider       <br/>[shanghai_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fshanghai_gov.py)                 | ä¸Šæµ·å¸‚äººæ°‘æ”¿åºœ                                                                              |
+| zj-gov               | ZJSpider                <br/>[zhejiang_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fzhejiang_gov.py)                 | æµ™æ±Ÿçœäººæ°‘æ”¿åºœ                                                                              |
+| gd-gov-latest-policy | GdGovLatestPolicySpider <br/>[gd_gov_latest_policy.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fgd_gov_latest_policy.py) | å¹¿ä¸œçœäººæ°‘æ”¿åºœ  æ–‡ä»¶åº“                                                                         |
+| gd-gov-doc-lib       | GdGovDocLibSpider       <br/>[gd_gov_doc_lib.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fgd_gov_doc_lib.py)             | å¹¿ä¸œçœäººæ°‘æ”¿åºœ æœ€æ–°æ”¿ç­–                                                                         |
+| gz-gov               | GzGovSpider             <br/>[gz_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fgz_gov.py)                             | å¹¿å·å¸‚äººæ°‘æ”¿åºœ                                                                              |
+| js-gov               | JsGovSpider             <br/>[js_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fjs_gov.py)                             | æ±Ÿè‹çœäººæ°‘æ”¿åºœ                                                                              |
+| bj-gov               | BjGovSpider             <br/>[bj_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fbj_gov.py)                             | åŒ—äº¬å¸‚äººæ°‘æ”¿åºœ                                                                              |
+| sc-gov               | ScGovSpider             <br/> [sc_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsc_gov.py)                            | å››å·çœäººæ°‘æ”¿åºœ <br/>`gfxwj`, `newzfwj`, `bmgfxwj` ä¸‰ä¸ªç½‘å€çš„çˆ¬è™«ï¼Œè¯·åœ¨ settings.yml é…ç½®æ–‡ä»¶ä¸­ SC_GOV å‚æ•°ç¡®è®¤ |
+| safe                 | SafeSpider              <br/>[safe_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsafe_gov.py)                         | å›½å®¶å¤–æ±‡ç®¡ç†å±€                                                                              |
+| mof                  | MofSpider               <br/>[safe_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsafe_gov.py)                         | è´¢æ”¿éƒ¨                                                                                  |
+| csrc                 | CsrcSpider              <br/>[csrc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fcsrc.py)                                 | è¯ç›‘ä¼š                                                                                  |
+| miit                 | MiitSpider              <br/>[miit.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fmiit.py)                                 | å·¥ä¸šå’Œä¿¡æ¯åŒ–éƒ¨                                                                              |
+| pbc                  | PbcSpider               <br/>[pbc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fpbc.py)                                   | ä¸­å›½äººæ°‘é“¶è¡Œ                                                                               |
+| ndrc                 | NdrcSpider              <br/>[ndrc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fndrc.py)                                 | å›½å®¶å‘æ”¹å§”                                                                                |
 
