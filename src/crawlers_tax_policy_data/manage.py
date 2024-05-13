@@ -1,6 +1,7 @@
 import asyncio
 
 from crawlers_tax_policy_data.spider.bj_gov import BjGovSpider
+from crawlers_tax_policy_data.spider.cbirc import CbircSpider
 from crawlers_tax_policy_data.spider.csrc import CsrcSpider
 from crawlers_tax_policy_data.spider.gd_gov_doc_lib import GdGovDocLibSpider
 from crawlers_tax_policy_data.spider.gd_gov_latest_policy import \
@@ -34,7 +35,8 @@ crawlers = {
     'csrc': CsrcSpider,
     'miit': MiitSpider,
     'pbc': PbcSpider,
-    'ndrc': NdrcSpider
+    'ndrc': NdrcSpider,
+    'cbirc': CbircSpider
 }
 
 

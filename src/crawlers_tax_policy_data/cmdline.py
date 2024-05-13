@@ -88,6 +88,9 @@ def crawlers_gov(city):
 
     ndrc
     [国家发改委](www.ndrc.gov.cn)
+
+    cbirc
+    [银保监会](www.cbirc.gov.cn)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()

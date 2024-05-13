@@ -157,6 +157,8 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   pbc [中国人民银行](www.pbc.gov.cn)
 
   ndrc [国家发改委](www.ndrc.gov.cn)
+  
+  cbirc [银保监会](www.cbirc.gov.cn)
   ----------------------------------------------------------------
 
 Options:

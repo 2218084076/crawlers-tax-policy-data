@@ -43,3 +43,4 @@
 | miit                 | MiitSpider              <br/>[miit.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fmiit.py)                                 | 工业和信息化部                                                                              |
 | pbc                  | PbcSpider               <br/>[pbc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fpbc.py)                                   | 中国人民银行                                                                               |
 | ndrc                 | NdrcSpider              <br/>[ndrc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fndrc.py)                                 | 国家发改委                                                                                |
+| cbirc                | CbircSpider<br/>  [cbirc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fcbirc.py)                                          | 银保监会                                                                                 |
