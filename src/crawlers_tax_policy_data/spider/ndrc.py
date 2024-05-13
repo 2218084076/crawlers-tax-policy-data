@@ -215,7 +215,7 @@ class NdrcSpider(BaseSpider):
             file_path=(
                     self.output_dir /
                     crawlers_categories[spider_name]['name'] /
-                    f"{self.start_date}/{self.end_date}-public-information.csv".replace('/','-')
+                    f"{self.start_date}/{self.end_date}-public-information.csv".replace('/', '-')
             )
         )
         await asyncio.sleep(0.5)
@@ -244,13 +244,17 @@ class NdrcSpider(BaseSpider):
         texts = html.xpath('//div[@class="article_l"]//text()')
         cleaned_texts = [clean_text(text) for text in texts]
 
-        all_related_links = ''
+        all_related_links = [
+            ''.join(i.xpath('.//text()')) + ' ' +
+            ''.join(i.xpath('./@href')).replace('../../..', '/'.join(pg_data['link'].split('/')[:-4]))
+            for i in html.xpath('//div[@class="xgwz"]//a')
+        ]
 
         all_appendix = extract_related_links(html, xpath_query, _url_prefix)
         return {
             'text': '\n'.join(cleaned_texts).strip(),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
-            'related_documents': all_related_links,
+            'related_documents': ',\n'.join(all_related_links),
             'title': title
         }
 
