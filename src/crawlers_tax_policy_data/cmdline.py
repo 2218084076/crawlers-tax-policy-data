@@ -76,6 +76,18 @@ def crawlers_gov(city):
 
     mof
     [财政部 财政文告;财政部令;财政部公告](mof.gov.cn)
+
+    csrc
+    [证监会](www.csrc.gov.cn)
+
+    miit
+    [工业和信息化部](www.miit.gov.cn)
+
+    pbc
+    [中国人民银行](www.pbc.gov.cn)
+
+    ndrc
+    [国家发改委](www.ndrc.gov.cn)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()
