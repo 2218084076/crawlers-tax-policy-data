@@ -139,7 +139,7 @@ class BaseSpider:
         :return:
         """
         p = await async_playwright().start()
-        self.browser = await p.webkit.launch(
+        self.browser = await p.firefox.launch(
             headless=settings.HEADLESS,
         )
         self.page = await self.browser.new_page()
@@ -164,10 +164,11 @@ class BaseSpider:
     def build_file_xpath(self):
         """
         Generate an XPath query string based on a list of file types
+
         :return:
         """
         return " or ".join(
-            [f"substring(@href, string-length(@href) - string-length('{ft}') + 1) = '{ft}'" for ft in self.file_types]
+            [f"contains(@href, '{ft}')" for ft in self.file_types]
         )
 
     @staticmethod

@@ -12,6 +12,7 @@ from crawlers_tax_policy_data.spider.js_gov import JsGovSpider
 from crawlers_tax_policy_data.spider.miit import MiitSpider
 from crawlers_tax_policy_data.spider.mof import MofSpider
 from crawlers_tax_policy_data.spider.ndrc import NdrcSpider
+from crawlers_tax_policy_data.spider.nmpa import NmpaSpider
 from crawlers_tax_policy_data.spider.pbc import PbcSpider
 from crawlers_tax_policy_data.spider.safe_gov import SafeSpider
 from crawlers_tax_policy_data.spider.samr import SamrSpider
@@ -38,7 +39,8 @@ crawlers = {
     'pbc': PbcSpider,
     'ndrc': NdrcSpider,
     'cbirc': CbircSpider,
-    'samr': SamrSpider
+    'samr': SamrSpider,
+    'nmpa': NmpaSpider
 }
 
 

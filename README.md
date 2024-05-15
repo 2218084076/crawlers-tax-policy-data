@@ -45,3 +45,4 @@
 | ndrc                 | NdrcSpider              <br/>[ndrc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fndrc.py)                                 | 国家发改委                                                                                |
 | cbirc                | CbircSpider<br/>  [cbirc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fcbirc.py)                                          | 银保监会                                                                                 |
 | samr                 | SamrSpider<br/>[samr.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsamr.py)                                               | 市场监督管理总局                                                                             |
+| nmpa                 | NmpaSpider<br/>[nmpa.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fnmpa.py)                                               | 国家药监局                                                                                |

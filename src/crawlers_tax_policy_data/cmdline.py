@@ -94,6 +94,9 @@ def crawlers_gov(city):
 
     samr
     [市场监督管理总局](www.samr.gov.cn)
+
+    nmpa
+    [国家药监局](www.nmpa.gov.cn)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()

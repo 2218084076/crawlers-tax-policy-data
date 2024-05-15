@@ -1,6 +1,7 @@
 """
-市场监督管理总局
-https://www.samr.gov.cn/zw/zjwj/index.html
+国家药监局
+https://www.nmpa.gov.cn/xxgk/fgwj/gzwj/index.html  工作文件
+https://www.nmpa.gov.cn/xxgk/fgwj/xzhgfxwj/index.html  行政规范性文件
 """
 import asyncio
 import re
@@ -18,25 +19,23 @@ from crawlers_tax_policy_data.utils.utils import clean_text
 
 pattern = r"[\u4e00-\u9fa5]+〔\d{4}〕\d+号"
 
-crawlers_categories = {
-    'asd': {
+crawlers_categories = [
+    {
+        'name': '工作文件',
+        'url': 'https://www.nmpa.gov.cn/xxgk/fgwj/gzwj/index.html',
+    },
+    {
         'name': '行政规范性文件',
-        'tag_xpath': '//span[@item="4215"]',
-        'item_id': '4215'
+        'url': 'https://www.nmpa.gov.cn/xxgk/fgwj/xzhgfxwj/index.html',
     },
-    'of': {
-        'name': '其他文件',
-        'tag_xpath': '//span[@item="4216"]',
-        'item_id': '4216'
-    },
-}
+]
 
 
-class SamrSpider(BaseSpider):
+class NmpaSpider(BaseSpider):
     """
-    市场监督管理总局 spider
+    国家药监局 spider
     """
-    folder = '市场监督管理总局'
+    folder = '国家药监局'
 
     def __init__(self):
         super().__init__()
@@ -45,14 +44,6 @@ class SamrSpider(BaseSpider):
             settings.GOV_OUTPUT_PAHT
         ) / self.folder / f'{self.start_date}-{self.end_date}'.replace('/', '')
         self.timestamp_format = '%Y-%m-%d'
-
-    @property
-    def url(self):
-        """
-        url
-        :return:
-        """
-        return 'https://www.samr.gov.cn/zw/zjwj/index.html'
 
     @property
     def check_date(self) -> tuple:
@@ -69,56 +60,59 @@ class SamrSpider(BaseSpider):
             end_date = f'{check_date.year}-{int(check_date.month):02d}-{int(check_date.day):02d}'
         return start_date, end_date
 
-    async def get_public_info(self):
+    async def get_public_info(self, crawlers: dict):
         """
         get public info
+        :param crawlers:
         :return:
         """
-
+        _url = crawlers['url']
         self.logger.info(
-            'Start collecting 市场监督管理总局  %s %s--%s data',
-            self.url, self.start_date, self.end_date
+            'Start collecting 国家药监局 %s %s %s--%s data',
+            crawlers['name'], _url, self.start_date, self.end_date
         )
 
         await self.init_page()
-        await self.page.goto(self.url)
+        await self.page.goto(_url)
         await self.page.wait_for_timeout(400)
         await asyncio.sleep(0.5)
 
-        detail_page_li = await self.list_page_parser()
+        detail_page_li = await self.list_page_parser(crawlers)
 
         if not detail_page_li:
             self.logger.warning(
-                'No data found for 市场监督管理总局 %s for dates %s--%s', self.url, self.start_date,
+                'No data found for 国家药监局 %s %s for dates %s--%s', crawlers['name'], _url, self.start_date,
                 self.end_date
             )
 
         for pg in detail_page_li:
-            await self.details_pg_processor(pg_data=pg)
+            await self.details_pg_processor(pg_data=pg, crawlers=crawlers)
 
-    async def list_page_parser(self):
+    async def list_page_parser(self, crawlers: dict):
         """
-        parse news list
+        list pages parser
+        :param crawlers:
         :return:
         """
         res = []
-
+        _url = crawlers['url']
         html_text = await self.page.content()
-        html: _Element = etree.HTML(html_text, etree.HTMLParser(encoding="utf-8"))
-
-        ul_list: List[_Element] = html.xpath(
-            '//div[@class="Three_zhnlist_02"]//ul'
+        html: _Element = etree.HTML(
+            html_text,
+            etree.HTMLParser(encoding="utf-8")
         )
-        res.extend(self.per_line_parser(ul_list))
 
-        last_pg_date_str = ''.join(
-            ul_list[-1].xpath('./li/text()')
-        ).strip()
+        li_list: List[_Element] = html.xpath(
+            '//div[@class="list"]//li'
+        )
+        res.extend(self.per_line_parser(li_list))
+
+        last_pg_date_str = re.sub(r'[()]', '', ''.join(li_list[-1].xpath('.//span/text()'))).strip()
         last_pg_date = datetime.strptime(last_pg_date_str, self.timestamp_format).date()
 
         while last_pg_date >= datetime.strptime(self.start_date, self.timestamp_format).date():
-            self.logger.info('Next pages')
-            await self.page.locator('//a[@class="layui-laypage-next text-tag"]').click()
+            self.logger.info('Next pages, click next')
+            await self.page.locator('//a[@target="_self" and text()="下一页"]').click()
             await self.page.wait_for_timeout(350)
             await asyncio.sleep(0.3)
             next_pg_text = await self.page.content()
@@ -127,27 +121,22 @@ class SamrSpider(BaseSpider):
                 next_pg_text,
                 etree.HTMLParser(encoding="utf-8", remove_comments=False)
             )
-            nex_lr_list: List[_Element] = next_html.xpath(
-                '//div[@class="Three_zhnlist_02"]//ul'
+            nex_li_list: List[_Element] = next_html.xpath(
+                '//div[@class="list"]//li'
             )
-            res.extend(self.per_line_parser(nex_lr_list))
+            res.extend(self.per_line_parser(nex_li_list))
 
-            _last_pg_date_str = ''.join(
-                nex_lr_list[-1].xpath('./li/text()')
-            ).strip()
-            if not _last_pg_date_str:
-                _last_pg_date_str = ''.join(
-                    nex_lr_list[-2].xpath('./li/text()')
-                ).strip()
+            _last_pg_date_str = re.sub(r'[()]', '', ''.join(nex_li_list[-1].xpath('.//span/text()'))).strip()
             last_pg_date = datetime.strptime(_last_pg_date_str, self.timestamp_format).date()
 
         self.logger.info('There are %s proclamation items', len(res))
         return res
 
-    async def details_pg_processor(self, pg_data: dict):
+    async def details_pg_processor(self, pg_data: dict, crawlers: dict):
         """
         Detail page processor
 
+        :param crawlers:
         :param pg_data:
         :return:
         """
@@ -161,13 +150,14 @@ class SamrSpider(BaseSpider):
             await self.page.wait_for_timeout(350)
             await asyncio.sleep(0.3)
             html_text = await self.page.content()
-            self.logger.info('Detail pageStart collecting %s', _link)
+            self.logger.info('Detail page start collecting %s', _link)
 
             pg_content = self.details_pg_parser(html_text=html_text, pg_data=pg_data)
 
             _title = re.sub(r'\s+', '', pg_data["title"])
             detail_page_html_file = (
                     self.output_dir /
+                    crawlers['name'] /
                     f'''{pg_data['date']}{_title}.html'''.replace('/', '')
             )
             self.save_html(
@@ -181,7 +171,7 @@ class SamrSpider(BaseSpider):
         save_data(
             content=pg_content,
             file_path=(
-                    self.output_dir /
+                    self.output_dir / crawlers['name'] /
                     f"{self.start_date}/{self.end_date}-public-information.csv".replace('/', '-')
             )
         )
@@ -194,7 +184,6 @@ class SamrSpider(BaseSpider):
     ):
         """
         details page parser
-
         :param pg_data:
         :param html_text:
         :return:
@@ -209,40 +198,28 @@ class SamrSpider(BaseSpider):
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
         title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
-        texts = html.xpath('//div[@class="Three_xilan_02"]//text()')
+        texts = html.xpath('//div[@class="wenzhang w1200-auto"]//text()')
         cleaned_texts = [clean_text(text) for text in texts]
 
         all_related_links = []
-        for _a in html.xpath('//div[@class="Three_xilan_02"]//a'):
-            if ''.join(_a.xpath('./@href')).strip() == '#':
-                continue
-            all_related_links.append(
-                f'''
-{''.join(_a.xpath('.//text()'))} {'/'.join(self.page.url.split('/')[:3])}{''.join(_a.xpath('./@href'))}
-                '''.strip()
-            )
 
         all_appendix = []
-        for _a in html.xpath(xpath_query):
+        for i in html.xpath(xpath_query):
+            _filename = ''.join(i.xpath('.//text()'))
+            _file_link = ''.join(i.xpath('.//@href')).strip()
             all_appendix.append(
                 f'''
-{''.join(_a.xpath('.//text()'))} {'/'.join(self.page.url.split('/')[:3])}{''.join(_a.xpath('./@href'))}
-                '''.strip()
+                {_filename}  {'/'.join(self.page.url.split('/')[:3])}{_file_link}
+            '''.strip()
             )
-
-        editor_tg = html.xpath('//div[@class="Three_xilan01_01"]//ul[@class="dw"]')[1]
-        editor = clean_text(
-            ''.join(
-                editor_tg.xpath('./li[@class="Three_xilan01_02 Three_xilan01_0201 text-tag"]/text()')
-            ))
 
         return {
             'text': '\n'.join(cleaned_texts).strip(),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(all_related_links),
             'title': title,
-            'editor': editor,
-            'date': ''.join(html.xpath('//meta[@name="PubDate"]/@content'))
+            'editor': ''.join(html.xpath('//h3[@class="two-title"]/text()')).strip(),
+            'date': ''.join(html.xpath('//meta[@name="PubDate"]/@content')).strip()
         }
 
     def per_line_parser(
@@ -258,7 +235,7 @@ class SamrSpider(BaseSpider):
         """
         res = []
         for line in li_list_html:
-            _page_date = ''.join(line.xpath('./li[@class="nav04Left02_contenttime text-tag"]//text()')).strip()
+            _page_date = re.sub(r'[()]', '', ''.join(line.xpath('.//span/text()'))).strip()
             if not _page_date:
                 continue
             try:
@@ -271,8 +248,10 @@ class SamrSpider(BaseSpider):
             if (datetime.strptime(self.start_date, self.timestamp_format).date()
                     <= _date
                     <= datetime.strptime(self.end_date, self.timestamp_format).date()):
-                _title = ''.join(line.xpath('.//a//text()')).strip()
-                _link = f'''{'/'.join(self.page.url.split('/')[:-3])}{''.join(line.xpath('.//a/@href')).strip()}'''
+                _title = ''.join(line.xpath('.//a/text()')).strip()
+                _url_prefix = '/'.join(self.page.url.split('/')[:3])
+                detail_page_link = ''.join(line.xpath('.//a/@href')).strip()
+                _link = detail_page_link.replace('../../..', _url_prefix)
                 res.append({
                     'title': _title,
                     'link': _link,
@@ -286,15 +265,6 @@ class SamrSpider(BaseSpider):
         :return:
         """
         self.logger.info('start running crawlers...')
-        await self.get_public_info()
-        await self.stop_page()
-        self.logger.info('Data collection completed')
-
-    def build_file_xpath(self):
-        """
-        Generate an XPath query string based on a list of file types
-        :return:
-        """
-        return " or ".join(
-            [f"contains(@href, '{ft}')" for ft in self.file_types]
-        )
+        for _s in crawlers_categories:
+            await self.get_public_info(_s)
+            await self.stop_page()

@@ -161,7 +161,8 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   cbirc [银保监会](www.cbirc.gov.cn)
 
   samr [市场监督管理总局](www.samr.gov.cn)
-
+  
+  nmpa [国家药监局](www.nmpa.gov.cn)
   ----------------------------------------------------------------
 
 Options:
