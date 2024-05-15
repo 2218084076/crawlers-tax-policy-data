@@ -159,6 +159,9 @@ Usage: cmdline.py crawlers-gov [OPTIONS]
   ndrc [国家发改委](www.ndrc.gov.cn)
   
   cbirc [银保监会](www.cbirc.gov.cn)
+
+  samr [市场监督管理总局](www.samr.gov.cn)
+
   ----------------------------------------------------------------
 
 Options:
@@ -197,4 +200,5 @@ python .\src\crawlers_tax_policy_data\cmdline.py run-all
 | miit                 | MiitSpider              <br/>[miit.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fmiit.py)                                 | 工业和信息化部                                                                              |
 | pbc                  | PbcSpider               <br/>[pbc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fpbc.py)                                   | 中国人民银行                                                                               |
 | ndrc                 | NdrcSpider              <br/>[ndrc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fndrc.py)                                 | 国家发改委                                                                                |
-
+| cbirc                | CbircSpider<br/>  [cbirc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fcbirc.py)                                          | 银保监会                                                                                 |
+| samr                 | SamrSpider<br/>[samr.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsamr.py)                                               | 市场监督管理总局                                                                             |

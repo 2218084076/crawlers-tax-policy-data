@@ -151,6 +151,7 @@ class BaseSpider:
         """
         await self.page.close()
         await self.browser.close()
+        self.logger.info("stop page and browser")
 
     @property
     def check_date(self):

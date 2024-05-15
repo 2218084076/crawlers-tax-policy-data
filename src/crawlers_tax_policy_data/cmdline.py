@@ -91,6 +91,9 @@ def crawlers_gov(city):
 
     cbirc
     [银保监会](www.cbirc.gov.cn)
+
+    samr
+    [市场监督管理总局](www.samr.gov.cn)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()
