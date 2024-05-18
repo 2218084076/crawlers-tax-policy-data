@@ -19,7 +19,13 @@ init_log()
 @click.option('-V', '--version', is_flag=True, help='Show version and exit.')
 @click.option('-v', '--verbose', is_flag=True, help='Get detailed output')
 def main(ctx, version, verbose):
-    """"""
+    """
+    main
+    :param ctx:
+    :param version:
+    :param verbose:
+    :return:
+    """
     if version:
         click.echo(__version__)
     elif verbose:
@@ -97,6 +103,9 @@ def crawlers_gov(city):
 
     nmpa
     [国家药监局](www.nmpa.gov.cn)
+
+    shui5
+    [税屋](www.shui5.cn)
     ----------------------------------------------------------------
     """
     loop = asyncio.get_event_loop()

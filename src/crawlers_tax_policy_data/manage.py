@@ -19,6 +19,7 @@ from crawlers_tax_policy_data.spider.samr import SamrSpider
 from crawlers_tax_policy_data.spider.sc_gov import ScGovSpider
 from crawlers_tax_policy_data.spider.shanghai_gov import ShangHaiGovSpider
 from crawlers_tax_policy_data.spider.shenzhen import ShenZhengSpider
+from crawlers_tax_policy_data.spider.shui5 import ShuiWuSpider
 from crawlers_tax_policy_data.spider.zhejiang_gov import ZJSpider
 
 crawlers = {
@@ -40,7 +41,8 @@ crawlers = {
     'ndrc': NdrcSpider,
     'cbirc': CbircSpider,
     'samr': SamrSpider,
-    'nmpa': NmpaSpider
+    'nmpa': NmpaSpider,
+    'shui5': ShuiWuSpider
 }
 
 
