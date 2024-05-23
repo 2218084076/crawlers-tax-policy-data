@@ -116,8 +116,7 @@ class GzGovSpider(BaseSpider):
                 save_data(
                     content=detail_data,
                     file_path=Path(
-                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public'
-                                                                                               f'-information.csv'
+                        settings.GOV_OUTPUT_PAHT) / self.folder / f'{start_date}-{end_date}' / f'{start_date}-{end_date}-public-information.csv'
                 )
                 await asyncio.sleep(0.3)
         await self.stop_page()

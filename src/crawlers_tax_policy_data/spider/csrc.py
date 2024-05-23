@@ -13,7 +13,6 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import clean_text
 
 
 class CsrcSpider(BaseSpider):
@@ -180,7 +179,7 @@ class CsrcSpider(BaseSpider):
             pg_data: dict
     ):
         """
-        deatil page parser
+        details page parser
         :param pg_data:
         :param html_text:
         :return:
@@ -196,15 +195,29 @@ class CsrcSpider(BaseSpider):
         )
         title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
 
-        texts = html.xpath('//div[@class="detail-news"]//text()')
-        cleaned_texts = [clean_text(text) for text in texts]
+        # Content Parsing Modul
+        xxgk_table = [tab.strip() for tab in html.xpath('//div[@class="content"]//div[@class="xxgk-table"]//text()')]
+        detail_tit = html.xpath('//div[@class="content"]/h2//text()')
+        text = html.xpath('//div[@class="content"]/div[@class="detail-news"]//text()')
+        info_list = []
+        empty_text = 0
+        for t in xxgk_table:
+            if t == '':
+                empty_text += 1
+            else:
+                if empty_text <= 2:
+                    info_list.append(' ')
+                elif empty_text > 2:
+                    info_list.append('\n')
+                info_list.append(t)
+                empty_text = 0
 
         all_related_links = extract_related_links(html, '//div[@class="detail-news"]//p/a', '')
 
         all_appendix = extract_related_links(html, xpath_query, _url_prefix)
         return {
             'title': title,
-            'text': '\n'.join(cleaned_texts).strip(),
+            'text': f'''{''.join(info_list)}\n\n{''.join(detail_tit)}\n\n{''.join(text)}''',
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(list(set(all_related_links))),
         }

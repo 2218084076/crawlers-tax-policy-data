@@ -16,7 +16,6 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import clean_text
 
 pattern = r"[\u4e00-\u9fa5]+〔\d{4}〕\d+号"
 
@@ -90,6 +89,7 @@ class CbircSpider(BaseSpider):
         span_id = await self.page.locator('//span[@class="item-class ng-binding active"]').get_attribute('item')
         if span_id != crawlers['item_id']:
             await self.page.locator(crawlers['tag_xpath']).click()
+        self.logger.info('Start collecting %s', crawlers['name'])
         await self.page.wait_for_timeout(350)
         await asyncio.sleep(0.5)
 
@@ -171,7 +171,6 @@ class CbircSpider(BaseSpider):
             await self.page.wait_for_timeout(350)
             await asyncio.sleep(0.3)
             html_text = await self.page.content()
-            self.logger.info('Detail pageStart collecting %s', _link)
 
             pg_content = self.details_pg_parser(html_text=html_text, pg_data=pg_data)
 
@@ -206,36 +205,69 @@ class CbircSpider(BaseSpider):
     ):
         """
         details page parser
+
         :param pg_data:
         :param html_text:
         :return:
         """
+        self.logger.info('Detail pageStart collecting %s', pg_data['link'])
         _url_prefix = '/'.join(pg_data['link'].split('/')[:-1])
 
-        file_xpath = self.build_file_xpath()
-        xpath_query = f'//a[{file_xpath}]'
+        # file_xpath = self.build_file_xpath()
+        # xpath_query = f'//a[{file_xpath}]'
 
         html = etree.HTML(
             html_text,
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
         title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
-        texts = html.xpath('//div[@class="content newcontent"]//div[@class="row"]//text()')
-        cleaned_texts = [clean_text(text) for text in texts]
 
         all_related_links = []
 
         all_appendix = []
-        for i in html.xpath('//div[@class="content newcontent"]//div[@class="row"]//p'):
+        # //div[@class="wenzhang-fujian mt25"]//a
+        for i in html.xpath('//div[@class="wenzhang-fujian mt25"]//a'):
+            _url = ''.join(i.xpath('./@href'))
+            _tit = ''.join(i.xpath('./text()'))
+            all_related_links.append(f'''{_tit} {_url}''')
 
+        for i in html.xpath('//div[@class="content newcontent"]//div[@class="row"]//p'):
             _u = ''.join(i.xpath('.//a/@href')).strip()
             if _u:
                 _t = ''.join(i.getprevious().xpath('.//span//text()')).strip()
                 _item = f'''{_t} {_u}'''
                 all_appendix.append(_item)
 
+        # parsing main content
+        # parsing general information of the document
+        general_info_element = [
+            con.strip() for con in html.xpath(
+                '//div[@class="content newcontent"]/div[@class="container main-box"]//div[@class="row"]/div[@ng-show="generaltype==1"]//text()'
+            )
+        ]
+        tit = html.xpath(
+            '//div[@class="content newcontent"]/div[@class="container main-box"]//div[@class="row"]/div[@class="wenzhang-title ng-binding"]//text()'
+        )
+        detail_content = html.xpath(
+            '//div[@class="content newcontent"]/div[@class="container main-box"]//div[@class="row"]/div[@id="wenzhang-content"]//font//text()'
+        )
+
+        general_info = []
+        _index = 0
+        for i in general_info_element:
+            if not i:
+                if _index >= 1:
+                    general_info.append('\n')
+                    _index = 0
+                else:
+                    general_info.append(' ')
+            else:
+                if '：' in i:
+                    _index += 1
+                general_info.append(i)
+
         return {
-            'text': '\n'.join(cleaned_texts).strip(),
+            'text': f'''{''.join(general_info)}\n\n{''.join(tit)}\n\n{''.join(detail_content)}''',
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': '\n'.join(all_related_links),
             'title': title,

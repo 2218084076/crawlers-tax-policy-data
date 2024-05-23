@@ -13,7 +13,6 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import clean_text
 
 
 class SafeSpider(BaseSpider):
@@ -201,16 +200,38 @@ class SafeSpider(BaseSpider):
         )
         title = ''.join(html.xpath('//div[@class="detail_tit"]//text()')).strip()
 
-        texts = html.xpath('//div[@id="content"]//span/text()')
-        cleaned_texts = [clean_text(text) for text in texts]
         editor = ''.join(html.xpath('//span[@id="wh"]//text()')).strip()
 
         all_related_links = extract_related_links(html, '//div[@class="list_conr"]//a', _url_prefix)
 
         all_appendix = extract_related_links(html, xpath_query, _url_prefix)
+
+        # 正文
+        condition = html.xpath('//div[@class="detail_conbg"]//div[@class="condition"]//text()')
+        detail_tit = html.xpath('//div[@class="detail_conbg"]//div[@class="detail_tit"]//text()')
+        detail_content = html.xpath('//div[@class="detail_conbg"]//div[@class="detail_content"]//text()')
+        condition_txt = []
+        is_previous_empty = False
+        empty_count = 0
+        for con in condition:
+            if con.strip() == '':
+                empty_count += 1
+                if empty_count == 2:
+                    condition_txt.pop()  # Remove the previous space added for single empty string
+                    condition_txt.append('\n')
+                    empty_count = 0
+                else:
+                    if not is_previous_empty:
+                        condition_txt.append(' ')
+                is_previous_empty = True
+            else:
+                condition_txt.append(con.strip())
+                is_previous_empty = False
+                empty_count = 0
+
         return {
             'title': title,
-            'text': '\n'.join(cleaned_texts).strip(),
+            'text': f'''{''.join(condition_txt).strip()}\n\n{''.join(detail_tit)}\n\n{''.join(detail_content)}''',
             'editor': editor,
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(list(set(all_related_links))),
