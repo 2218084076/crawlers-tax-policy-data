@@ -25,6 +25,17 @@ crawlers_categories = {
     'gg': {'name': '公告', 'suffix': '/gg/index'},
 }
 
+replacements = {
+    '(': '〔',
+    ')': '〕',
+    '[': '〔',
+    ']': '〕',
+    '（': '〔',
+    '）': '〕',
+    '【': '〔',
+    '】': '〕'
+}
+
 
 class NdrcSpider(BaseSpider):
     """
@@ -188,14 +199,9 @@ class NdrcSpider(BaseSpider):
             html_text = respo.text
             self.logger.info('Detail pageStart collecting %s', _link)
 
-            pg_content = self.details_pg_parser(html_text=html_text, pg_data=pg_data)
+            pg_content = self.details_pg_parser(html_text=html_text, pg_data=pg_data, spider_name=spider_name)
 
             _title = re.sub(r'\s+', '', pg_data["title"])
-            match = re.search(pattern, pg_content['title'])
-            try:
-                editor = match.group()
-            except AttributeError:
-                editor = ''
             detail_page_html_file = (
                     self.output_dir /
                     crawlers_categories[spider_name]['name'] /
@@ -207,7 +213,6 @@ class NdrcSpider(BaseSpider):
             )
 
             pg_content.update({key: pg_data[key] for key in ['link', 'date']})
-            pg_content.update({'editor': editor})
             pg_content.update({'html_file': str(detail_page_html_file)})
 
         save_data(
@@ -223,12 +228,14 @@ class NdrcSpider(BaseSpider):
     def details_pg_parser(
             self,
             html_text: str,
-            pg_data: dict
+            pg_data: dict,
+            spider_name: str
     ):
         """
         details page parser
         :param pg_data:
         :param html_text:
+        :param spider_name:
         :return:
         """
         _url_prefix = '/'.join(pg_data['link'].split('/')[:-1])
@@ -241,9 +248,38 @@ class NdrcSpider(BaseSpider):
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
         title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
-        texts = html.xpath('//div[@class="article_l"]//text()')
-        cleaned_texts = [clean_text(text) for text in texts]
 
+        # analyze editor
+        _editor_pattern = r'(?:([\u4e00-\u9fa5]+规)?〔?(\d{4})[年〕]?(\d+)号令?)|(?:(\d{4})年第(\d+)号令)'
+        match = re.search(_editor_pattern, title)
+        editor_string = match.group()
+        # analyze detailed text
+        texts = []
+        if html.xpath('//div[@class="article_l "]//*'):
+            for i in html.xpath('//div[@class="article_l "]//*'):
+                _txt = ''.join(i.xpath('./text()'))
+                if not editor_string:
+                    match = re.search(_editor_pattern, _txt)
+                    if match:
+                        editor_string = match.group()
+                    else:
+                        pass
+                else:
+                    if '打印' in _txt:
+                        continue
+                    texts.append(_txt)
+        else:
+            for i in html.xpath('//div[@class="article_l"]/div[@class="article_con article_con_notitle"]//*'):
+                _txt = ''.join(i.xpath('./text()'))
+                if not editor_string:
+                    for old, new in replacements.items():
+                        _txt = _txt.replace(old, new)
+                    match = re.search(_editor_pattern, _txt)
+                    if match:
+                        editor_string = match.group()
+                    else:
+                        pass
+                texts.append(_txt)
         all_related_links = [
             ''.join(i.xpath('.//text()')) + ' ' +
             ''.join(i.xpath('./@href')).replace('../../..', '/'.join(pg_data['link'].split('/')[:-4]))
@@ -251,12 +287,15 @@ class NdrcSpider(BaseSpider):
         ]
 
         all_appendix = extract_related_links(html, xpath_query, _url_prefix)
-        return {
-            'text': '\n'.join(cleaned_texts).strip(),
+
+        _res = {
+            'text': ''.join(texts).strip(),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(all_related_links),
-            'title': title
+            'title': title,
+            'editor': editor_string
         }
+        return _res
 
     def per_line_parser(
             self,
