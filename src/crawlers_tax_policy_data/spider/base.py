@@ -130,7 +130,7 @@ class BaseSpider:
         :return:
         """
         p = sync_playwright().start()
-        self.browser = p.webkit.launch(headless=settings.HEADLESS)
+        self.browser = p.webkit.launch(headless=settings.HEADLESS, timeout=12000)
         self.page = self.browser.new_page()
 
     async def init_page(self):

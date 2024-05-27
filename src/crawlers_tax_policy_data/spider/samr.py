@@ -175,7 +175,7 @@ class SamrSpider(BaseSpider):
                 file=detail_page_html_file
             )
 
-            pg_content.update({key: pg_data[key] for key in ['link']})
+            pg_content.update({key: pg_data[key] for key in ['link', 'date']})
             pg_content.update({'html_file': str(detail_page_html_file)})
 
         save_data(
@@ -221,7 +221,29 @@ class SamrSpider(BaseSpider):
                 _content = text
                 info_list.append(f'''{_tit}{_content}''')
         info_table_content = '\n'.join(info_list)
-        texts = ''.join(html.xpath('//div[@class="Three_xilan_07"]//text()')).strip()
+        texts = []
+        target_style = "text-align: center; font-family: 黑体, SimHei; font-size: 24px; line-height: 1.5em;"
+        _text_tit = ''
+
+        elements = html.xpath('//div[@class="Three_xilan_07"]/*')
+
+        for elem in elements:
+            if elem.tag == 'div' or elem.tag == 'table':
+                rows = elem.xpath('.//tr')
+                for tr in rows:
+                    row_content = []
+                    for td in tr.xpath('.//td'):
+                        row_content.append(''.join(td.xpath('.//text()')).strip())
+                    texts.append(' | '.join(row_content))
+            elif elem.tag == 'p' and target_style in elem.xpath('./@style'):
+                _text_tit += ''.join(elem.xpath('.//text()')).strip()
+            else:
+                if _text_tit:
+                    texts.append(_text_tit)
+                    _text_tit = ''
+                texts.append(''.join(elem.xpath('.//text()')).strip())
+
+        detail_content = '\n'.join(texts)
 
         all_related_links = []
         for _a in html.xpath('//div[@class="Three_xilan_02"]//a'):
@@ -257,12 +279,11 @@ class SamrSpider(BaseSpider):
             ))
 
         res = {
-            'text': f'''{info_table_content}\n\n{texts}''',
+            'text': f'''{info_table_content}\n\n{detail_content.strip()}''',
             'appendix': ',\n'.join(all_appendix),
             'related_documents': ',\n'.join(all_related_links),
             'title': title,
             'editor': editor,
-            'date': ''.join(html.xpath('//meta[@name="PubDate"]/@content'))
         }
         return res
 
