@@ -209,8 +209,19 @@ class SamrSpider(BaseSpider):
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
         title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
-        texts = html.xpath('//div[@class="Three_xilan_02"]//text()')
-        cleaned_texts = [clean_text(text) for text in texts]
+
+        # Parsing detailed text
+        info_list = []
+        _tit = ''
+        for i, _li in enumerate(html.xpath('//div[@class="Three_xilan01_01"]//li')):
+            text = ''.join(_li.xpath('.//text()')).strip()
+            if i % 2 == 0:
+                _tit = text
+            else:
+                _content = text
+                info_list.append(f'''{_tit}{_content}''')
+        info_table_content = '\n'.join(info_list)
+        texts = ''.join(html.xpath('//div[@class="Three_xilan_07"]//text()')).strip()
 
         all_related_links = []
         for _a in html.xpath('//div[@class="Three_xilan_02"]//a'):
@@ -223,6 +234,15 @@ class SamrSpider(BaseSpider):
             )
 
         all_appendix = []
+
+        for p in html.xpath('//div[@class="Three_xilan_07"]//p'):
+            _link = ''.join(p.xpath('./img/@src'))
+            if _link:
+                if 'http' not in _link:
+                    _link = f'''https://www.samr.gov.cn{_link}'''
+                previous_p = ''.join(p.xpath('preceding-sibling::p[1]/text()'))
+                all_appendix.append(f'''{previous_p} {_link}''')
+
         for _a in html.xpath(xpath_query):
             all_appendix.append(
                 f'''
@@ -236,14 +256,15 @@ class SamrSpider(BaseSpider):
                 editor_tg.xpath('./li[@class="Three_xilan01_02 Three_xilan01_0201 text-tag"]/text()')
             ))
 
-        return {
-            'text': '\n'.join(cleaned_texts).strip(),
-            'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
+        res = {
+            'text': f'''{info_table_content}\n\n{texts}''',
+            'appendix': ',\n'.join(all_appendix),
             'related_documents': ',\n'.join(all_related_links),
             'title': title,
             'editor': editor,
             'date': ''.join(html.xpath('//meta[@name="PubDate"]/@content'))
         }
+        return res
 
     def per_line_parser(
             self,

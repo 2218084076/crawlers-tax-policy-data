@@ -215,12 +215,13 @@ class CsrcSpider(BaseSpider):
         all_related_links = extract_related_links(html, '//div[@class="detail-news"]//p/a', '')
 
         all_appendix = extract_related_links(html, xpath_query, _url_prefix)
-        return {
+        res = {
             'title': title,
             'text': f'''{''.join(info_list)}\n\n{''.join(detail_tit)}\n\n{''.join(text)}''',
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(list(set(all_related_links))),
         }
+        return res
 
     def per_line_parser(
             self,
