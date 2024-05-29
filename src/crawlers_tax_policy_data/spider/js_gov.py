@@ -19,7 +19,7 @@ from crawlers_tax_policy_data.utils.utils import clean_text
 
 class JsGovSpider(BaseSpider):
     """
-    广州市行政规范性文件统一发布平台 爬虫
+    江苏省人民政府 爬虫
     """
     folder = 'jiangsu.gov.cn'
 
@@ -196,7 +196,7 @@ class JsGovSpider(BaseSpider):
         :return:
         """
         res = {}
-        self.logger.info('parse detail_page text data')
+        self.logger.info('parse detail_page text data %s',self.page.url)
 
         file_xpath = self.build_file_xpath()
         xpath_query = f'//a[{file_xpath}]'
@@ -207,7 +207,21 @@ class JsGovSpider(BaseSpider):
         )
 
         file_status = self.extract_file_status(html)
+
+        # analysis top information & texts
+        _tit = _con = ""
+        _top_info_lis = []
+        for index, i in enumerate(html.xpath('//table[@class="xxgk_table"]//td')):
+            if index % 2:
+                _con = ''.join(i.xpath('.//text()'))
+            else:
+                _tit = ''.join(i.xpath('.//text()'))
+            if _con and _tit:
+                _top_info_lis.append(f'''{_tit} {_con}''')
+        top_info = '\n'.join(_top_info_lis)
+
         texts = html.xpath('//div[@class="article"]/div[@class="left"]//p//text()')
+
         cleaned_texts = [clean_text(text) for text in texts]
 
         editor = next(
@@ -218,9 +232,13 @@ class JsGovSpider(BaseSpider):
         all_related_links = self.extract_links(html, '//div[@class="right"]//a')
 
         all_appendix = self.extract_links(html, xpath_query)
+        for img in html.xpath('//div[@class="article"]/div[@class="left"]//p//img'):
+            all_appendix.append(
+                f'''{''.join(img.xpath('./@title'))}: https://www.jiangsu.gov.cn{''.join(img.xpath('./@src'))}'''
+            )
 
         res.update({
-            'text': '\n'.join(cleaned_texts).strip(),
+            'text': f'''{top_info}\n\n{"".join(texts)}''',
             'related_documents': ',\n'.join(all_related_links),
             'state': ''.join(file_status),
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
@@ -234,23 +252,23 @@ class JsGovSpider(BaseSpider):
         在页面上执行JavaScript以处理文件状态。
         """
         js_code = """
-        var todayTimeStamp = new Date(new Date().setHours(0, 0, 0, 0)) / 1000;
-        var tTimeStamp = todayTimeStamp;
-        var losetime = '1715270400';
-        var file_status = '尚未施行';
-        if(losetime == null ||losetime==""){
-            losetime = '';
-        }
-        if(file_status == null ||file_status==""){
-            file_status = '';
-        }
-        if(file_status!= null || file_status != ""){
-            $('#file_status').parent().append(file_status);
-        }else if(losetime == null || losetime == "" || losetime == 0 || losetime < tTimeStamp){
-            $('#file_status').parent().append("失效");
-        }else{
-            $('#file_status').parent().append("有效");
-        }
+var todayTimeStamp = new Date(new Date().setHours(0, 0, 0, 0)) / 1000;
+var tTimeStamp = todayTimeStamp;
+var losetime = '1715270400';
+var file_status = '尚未施行';
+if(losetime == null ||losetime==""){
+    losetime = '';
+}
+if(file_status == null ||file_status==""){
+    file_status = '';
+}
+if(file_status!= null || file_status != ""){
+    $('#file_status').parent().append(file_status);
+}else if(losetime == null || losetime == "" || losetime == 0 || losetime < tTimeStamp){
+    $('#file_status').parent().append("失效");
+}else{
+    $('#file_status').parent().append("有效");
+}
         """
         await self.page.evaluate(js_code)
 
