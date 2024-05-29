@@ -152,7 +152,7 @@ class GzGovSpider(BaseSpider):
                     _editor = clean_text(''.join(row.xpath('./td[@class="hide"][1]/text()')))
                     res.append({'title': _title, 'link': _link, 'date': _page_date, 'editor': _editor})
 
-        lr_list = html.xpath('//table[@id="bbsTab"]//tr')[1:]
+        lr_list = html.xpath('//form[@id="form1"]//table[@id="bbsTab"]//tr')[1:]
         parse_news_items(lr_list)
 
         last_item_date_str = clean_text(''.join(lr_list[-1].xpath('./td[@class="hide"][2]/text()')))
@@ -161,11 +161,18 @@ class GzGovSpider(BaseSpider):
         while last_item_date >= datetime.strptime(start_date, '%Y年%m月%d日').date():
             await self.page.locator('//a[@id="next"]').click()
             await self.page.wait_for_timeout(350)
+            await asyncio.sleep(0.5)
             next_html_text = await self.page.content()
             next_html = etree.HTML(next_html_text, etree.HTMLParser(encoding="utf-8"))
-            next_items_list = next_html.xpath('//table[@id="bbsTab"]//tr')[1:]
-            parse_news_items(next_items_list)
+            next_items_list = next_html.xpath('//form[@id="form1"]//table[@id="bbsTab"]//tr')[1:]
+            # Added page parsing exception handling
+            if not next_items_list:
+                await self.page.reload()
+                await self.page.wait_for_timeout(500)
+                await asyncio.sleep(1)
+                continue
 
+            parse_news_items(next_items_list)
             last_item_date_str = ''.join(next_items_list[-1].xpath('./td[@class="hide"][2]/text()'))
             last_item_date = datetime.strptime(last_item_date_str, '%Y年%m月%d日').date()
 
@@ -174,7 +181,6 @@ class GzGovSpider(BaseSpider):
     async def parse_detail_page(self, html_text: str):
         """
         parse detail page
-
 
         :return:
         """
