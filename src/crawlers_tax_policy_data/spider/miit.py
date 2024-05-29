@@ -13,7 +13,6 @@ from lxml import etree
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import clean_text
 
 
 class MiitSpider(BaseSpider):
@@ -164,11 +163,13 @@ class MiitSpider(BaseSpider):
             pg_data: dict
     ):
         """
-        deatil page parser
+        details page parser
         :param pg_data:
         :param html_text:
         :return:
         """
+        self.logger.info('details page parser %s', pg_data['link'])
+
         _url_prefix = '/'.join(pg_data['link'].split('/')[:-1])
 
         file_xpath = self.build_file_xpath()
@@ -179,19 +180,30 @@ class MiitSpider(BaseSpider):
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
         title = ''.join(html.xpath('//h1[@id="con_title"]/text()')).strip()
+        # Analyze document number & top information
+        top_info_list = []
+        editor = ''
+        for p in html.xpath('//div[@class="xxgk-box"]//p'):
+            p_content = p.xpath('./span/text()')
+            if '发文字号' in p_content:
+                editor = p_content[-1].strip()
+            top_info_list.append(''.join(p_content))
+        top_info = '\n'.join(top_info_list)
+        c_title = ''.join(html.xpath('//h1[@id="con_title"]//text()')).strip()
 
-        texts = html.xpath('//div[@class="ccontent center"]//text()')
-        cleaned_texts = [clean_text(text) for text in texts]
+        texts = '\n'.join(html.xpath('//div[@id="con_con"]//p//text()'))
 
         all_related_links = extract_related_links(html, '//div[@class="detail-news"]//p/a', '')
 
         all_appendix = extract_related_links(html, xpath_query, _url_prefix)
-        return {
+        _res = {
             'title': title,
-            'text': '\n'.join(cleaned_texts).strip(),
+            'text': f'''{top_info}\n\n{c_title}\n\n{texts}''',
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(list(set(all_related_links))),
+            'editor': editor
         }
+        return _res
 
     def per_line_parser(
             self,
