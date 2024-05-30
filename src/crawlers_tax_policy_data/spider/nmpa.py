@@ -15,7 +15,6 @@ from lxml.etree import _Element
 from crawlers_tax_policy_data.config import settings
 from crawlers_tax_policy_data.spider.base import BaseSpider
 from crawlers_tax_policy_data.storage.local import save_data
-from crawlers_tax_policy_data.utils.utils import clean_text
 
 pattern = r"[\u4e00-\u9fa5]+〔\d{4}〕\d+号"
 
@@ -74,7 +73,7 @@ class NmpaSpider(BaseSpider):
 
         await self.init_page()
         await self.page.goto(_url)
-        await self.page.wait_for_timeout(400)
+        await self.page.wait_for_timeout(500)
         await asyncio.sleep(0.5)
 
         detail_page_li = await self.list_page_parser(crawlers)
@@ -106,6 +105,13 @@ class NmpaSpider(BaseSpider):
             '//div[@class="list"]//li'
         )
         res.extend(self.per_line_parser(li_list))
+        if not li_list:
+            self.logger.warning(
+                'No data found for 国家药监局 %s %s for dates %s--%s, retry', crawlers['name'], _url, self.start_date,
+                self.end_date
+            )
+            await self.page.reload()
+            await self.page.wait_for_timeout(500)
 
         last_pg_date_str = re.sub(r'[()]', '', ''.join(li_list[-1].xpath('.//span/text()'))).strip()
         last_pg_date = datetime.strptime(last_pg_date_str, self.timestamp_format).date()
@@ -198,8 +204,25 @@ class NmpaSpider(BaseSpider):
             etree.HTMLParser(encoding="utf-8")  # fix garbled characters in requests
         )
         title = ''.join(html.xpath('//meta[@name="ArticleTitle"]/@content')).strip()
-        texts = html.xpath('//div[@class="wenzhang w1200-auto"]//text()')
-        cleaned_texts = [clean_text(text) for text in texts]
+        # parse top information
+        _top_item_tit = ''
+        _top_item_con = ''
+        top_info_lis = []
+        for index, td in enumerate(html.xpath('//div[@class="wenzhang-table"]//td')):
+            _txt = ''.join(td.xpath('.//text()')).strip()
+            if index % 2:
+                _top_item_con = _txt.replace('\n', '').replace('\t', '')
+            if not index % 2:
+                _top_item_tit = _txt
+            elif _top_item_tit and _top_item_con:
+                top_info_lis.append(f'''{_top_item_tit}: {_top_item_con}''')
+                _top_item_tit = ''
+                _top_item_con = ''
+        top_info = '\n'.join(top_info_lis)
+        # text title
+        text_tit = ''.join(html.xpath(
+            '//div[@class="wenzhang w1200-auto"]//h2[@class="title"]//text() | //div[@class="wenzhang w1200-auto"]//h3[@class="two-title"]//text()'))
+        texts = html.xpath('//div[@class="wenzhang w1200-auto"]/div[@class="text"]//p//text()')
 
         all_related_links = []
 
@@ -212,13 +235,16 @@ class NmpaSpider(BaseSpider):
                 {_filename}  {'/'.join(self.page.url.split('/')[:3])}{_file_link}
             '''.strip()
             )
+        editor = ''.join(html.xpath('//h3[@class="two-title"]/text()')).strip()
+        if not editor:
+            editor = ''.join(re.findall(r"\d{4}年第\d+号", title))
 
         return {
-            'text': '\n'.join(cleaned_texts).strip(),
+            'text': f'''{top_info}\n\n{text_tit.strip()}\n\n{''.join(texts)}''',
             'appendix': ',\n'.join(all_appendix).replace('\xa0', ''),
             'related_documents': ',\n'.join(all_related_links),
             'title': title,
-            'editor': ''.join(html.xpath('//h3[@class="two-title"]/text()')).strip(),
+            'editor': editor,
             'date': ''.join(html.xpath('//meta[@name="PubDate"]/@content')).strip()
         }
 
