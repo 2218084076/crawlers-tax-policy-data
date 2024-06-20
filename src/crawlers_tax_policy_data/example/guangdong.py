@@ -1,10 +1,15 @@
-import time, sys, os, re, csv
-import requests
 import configparser
+import csv
+import datetime
+import json
+import os
+import re
+import sys
+import time
+
+import requests
 from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
-import json
-import datetime
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 

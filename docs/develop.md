@@ -1,6 +1,19 @@
-# ĞèÇó
+- [å¼€å‘æ–‡æ¡£](#%E5%BC%80%E5%8F%91%E6%96%87%E6%A1%A3)
+    - [éœ€æ±‚](#%E9%9C%80%E6%B1%82)
+        - [é‡‡é›†æ•°æ®æ ¼å¼](#%E9%87%87%E9%9B%86%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F)
+    - [éƒ¨ç½²æŒ‡å—](#%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97)
+        - [ä¾èµ–ç®¡ç†](#%E4%BE%9D%E8%B5%96%E7%AE%A1%E7%90%86)
+        - [åŠ¨æ€é…ç½®](#%E5%8A%A8%E6%80%81%E9%85%8D%E7%BD%AE)
+    - [ä½¿ç”¨æŒ‡å—](#%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)
+    - [å·²æä¾›çš„çˆ¬è™«ç½‘ç«™](#%E5%B7%B2%E6%8F%90%E4%BE%9B%E7%9A%84%E7%88%AC%E8%99%AB%E7%BD%91%E7%AB%99)
 
-## ²É¼¯Êı¾İ¸ñÊ½
+# å¼€å‘æ–‡æ¡£
+
+## éœ€æ±‚
+
+è·å–æ”¿åŠ¡å¹³å°ä¸­å…¬å¼€å…¬å‘ŠæŒ‡å®šå­—æ®µæ•°æ®
+
+### é‡‡é›†æ•°æ®æ ¼å¼
 
 ```json
 {
@@ -16,301 +29,180 @@
 }
 ```
 
-- link Á´½Ó
-- title ±êÌâ
-- editor ÎÄºÅ
-- state ×´Ì¬
-- issue date ·¢ÎÄÈÕÆÚ
-- tax type Ë°ÖÖ
-- text ÕıÎÄ
-- appendix ¸½¼ş£¨Á´½ÓÏÂÔØ£© ×¢£º¶à¸öÁ´½ÓÊ±Ê¹ÓÃ ` /` ·ÖºÅ·Ö¸î
-- related documents Ïà¹ØÎÄ¼ş£¨Á´½Ó£© ×¢£º¶à¸öÁ´½ÓÊ±Ê¹ÓÃ ` /` ·ÖºÅ·Ö¸î
+- link é“¾æ¥
+- title æ ‡é¢˜
+- editor æ–‡å·
+- state çŠ¶æ€
+- issue date å‘æ–‡æ—¥æœŸ
+- tax type ç¨ç§
+- text æ­£æ–‡
+- appendix é™„ä»¶ï¼ˆé“¾æ¥ä¸‹è½½ï¼‰
+- related documents ç›¸å…³æ–‡ä»¶ï¼ˆé“¾æ¥ï¼‰
 
+## éƒ¨ç½²æŒ‡å—
 
-![img.png](img.png)
+### ä¾èµ–ç®¡ç†
 
-## Ò³ÃæÊı¾İÊ¾Àı
+> æœ¬é¡¹ç›®ä½¿ç”¨ `poetry` è¿›è¡Œä¾èµ–ç®¡ç†
+>
+> å…¶ä¸­ä¾èµ–éƒ½è®°å½•åœ¨ [pyproject.toml](..%2Fpyproject.toml) æ–‡ä»¶ä¸­
+>
+>åœ¨é¡¹ç›®æ ¹ç›®å½•ä¸­æ‰§è¡Œ
+>
+> ```bash
+> # åœ¨ç³»ç»Ÿç¯å¢ƒä¸­å®‰è£…  `poetry` åº“
+> pip install -U poetry 
+> # å®‰è£…æ‰€æœ‰ä¾èµ–
+> poetry install
+> # è¿›å…¥ poetry åˆ›å»ºçš„è™šæ‹Ÿ python ç¯å¢ƒ
+> poetry shell
+> # æ³¨: æœ¬é¡¹ç›®ä¾èµ–ä¸­ä½¿ç”¨äº† playwright æµè§ˆå™¨è‡ªåŠ¨åŒ–å·¥å…·, ä¾èµ– playwright æµè§ˆå™¨é©±åŠ¨, 
+> # å¿…è¦æ—¶éœ€æ‰‹åŠ¨ `playwright install` å®‰è£…æµè§ˆå™¨é©±åŠ¨
+> ``` 
 
-### ÄÚÃÉ¹Å
+- åˆ°æ­¤ä¸ºæ­¢, é¡¹ç›®æ‰€æœ‰æ‰€éœ€ä¾èµ–å…¨éƒ¨å®‰è£…å®Œæ¯•
 
-```json
-{
-    "msg": "success",
-    "status": 0,
-    "data": {
-        "id": 30492,
-        "name": "°´Ë°ÖÖ²éÑ¯",
-        "parentId": 30481,
-        "code": "nmg_tax_search_gj_sz",
-        "pageSize": 1,
-        "sort": 0,
-        "count": 9128,
-        "attribute": {
-            "categoryId": "",
-            "title": "",
-            "keywords": "",
-            "description": "",
-            "extend": {
-                "withChild": "false",
-                "faguiType": "1",
-                "modelId": "fagui",
-                "level": "1",
-                "withParent": "false",
-                "tagIds": "996423",
-                "aggTagIds": "996423",
-                "withText": "false"
-            }
-        },
-        "contents": [
-            {
-                "id": "7185821459439161344",
-                "author": "¹¤ÒµºÍĞÅÏ¢»¯²¿",
-                "categoryId": 3609,
-                "clicks": 20,
-                "description": "¸ù¾İ¡¶ÖĞ»ªÈËÃñ¹²ºÍ¹úĞĞÕşĞí¿É·¨¡·¡¢¡¶¹úÎñÔº¶ÔÈ·Ğè±£ÁôµÄĞĞÕşÉóÅúÏîÄ¿Éè¶¨ĞĞÕşĞí¿ÉµÄ¾ö¶¨¡·¡¢¡¶²ÆÕş²¿ Ë°Îñ×Ü¾Ö ¹¤ÒµºÍĞÅÏ¢»¯²¿ ½»Í¨ÔËÊä²¿¹ØÓÚ½ÚÄÜ \nĞÂÄÜÔ´³µ´¬ÏíÊÜ³µ´¬Ë°ÓÅ»İÕş²ßµÄÍ¨Öª¡·(²ÆË°¡²2018¡³74ºÅ)¡¢¡¶¹¤ÒµºÍĞÅÏ¢»¯²¿ ²ÆÕş²¿ ¹ú¼ÒË°Îñ×Ü¾Ö¹ØÓÚµ÷ÕûÏíÊÜ³µ´¬Ë°ÓÅ»İµÄ½ÚÄÜ \nĞÂÄÜÔ´Æû³µ²úÆ·¼¼ÊõÒª",
-                "dictionaryValues": "None",
-                "editor": "ÖĞ»ªÈËÃñ¹²ºÍ¹ú¹¤ÒµºÍĞÅÏ¢»¯²¿¹«¸æ2024ÄêµÚ5ºÅ",
-                "expiryDate": "None",
-                "createDate": "None",
-                "hasFiles": "False",
-                "hasImages": "False",
-                "hasProducts": "False",
-                "modelId": "fagui",
-                "onlyUrl": "None",
-                "parentId": "None",
-                "publishDate": "2024-04-15",
-                "quoteContentId": "None",
-                "siteId": "90",
-                "tagIds": "None",
-                "text": "None",
-                "textHtml": "None",
-                "title": "¡¶µÀÂ·»ú¶¯³µÁ¾Éú²úÆóÒµ¼°²úÆ·¡·£¨µÚ381Åú£©¡¢¡¶ÏíÊÜ³µ´¬Ë°¼õÃâÓÅ»İµÄ½ÚÔ¼ÄÜÔ´ Ê¹ÓÃĞÂÄÜÔ´Æû³µ³µĞÍÄ¿Â¼¡·£¨µÚÁùÊ®Åú£©¡¢¡¶¼õÃâ³µÁ¾¹ºÖÃË°µÄĞÂÄÜÔ´Æû³µ³µĞÍÄ¿Â¼¡·£¨µÚËÄÅú£©",
-                "url": "None",
-                "cover": "None",
-                "source": "None",
-                "sourceUrl": "https://www.miit.gov.cn/zwgk/zcwj/wjfb/gg/art/2024/art_5e5407eaa8a74ec89101e7501cdbf77f.html",
-                "extend": {
-                    "sx_date_date": "2024-04-15",
-                    "state_dictionary": "1",
-                    "type_dictionary": "1"
-                },
-                "sort": 0,
-                "attribute": {}
-            },
-            {
-                "id": "7183270213901619200",
-                "author": "²ÆÕş²¿ º£¹Ø×ÜÊğ Ë°Îñ×Ü¾Ö",
-                "categoryId": 3609,
-                "clicks": 22,
-                "description": "ÄÚÃÉ¹Å¡¢ÁÉÄş¡¢¼ªÁÖ¡¢ºÚÁú½­¡¢¹ãÎ÷¡¢ÔÆÄÏ¡¢Î÷²Ø¡¢ĞÂ½®µÈÊ¡(×ÔÖÎÇø)²ÆÕşÌü£¬ĞÂ½®Éú²ú½¨Éè±øÍÅ²ÆÕş¾Ö£¬¹ú¼ÒË°Îñ×Ü¾ÖÄÚÃÉ¹Å¡¢ÁÉÄş¡¢¼ªÁÖ¡¢ºÚÁú½­¡¢¹ãÎ÷¡¢ÔÆÄÏ¡¢Î÷²Ø¡¢ĞÂ½®µÈÊ¡(×ÔÖÎÇø)Ë°Îñ¾Ö£¬ºôºÍºÆÌØ¡¢ÂúÖŞÀï¡¢´óÁ¬¡¢³¤´º¡¢¹ş¶û±õ¡¢ÄÏÄş¡¢À¥Ã÷¡¢À­Èø¡¢ÎÚÂ³Ä¾Æëº£¹Ø£ºÎªÍêÉÆ±ß¾³Ã³Ò×Ö§³ÖÕş²ß£¬ÓÅ»¯±ßÃñ»¥ÊĞÃ³Ò×¶àÔª»¯·¢Õ¹",
-                "dictionaryValues": "None",
-                "editor": "²Æ¹ØË°¡²2024¡³7ºÅ",
-                "expiryDate": "None",
-                "createDate": "None",
-                "hasFiles": "False",
-                "hasImages": "False",
-                "hasProducts": "False",
-                "modelId": "fagui",
-                "onlyUrl": "None",
-                "parentId": "None",
-                "publishDate": "2024-04-08",
-                "quoteContentId": "None",
-                "siteId": "90",
-                "tagIds": "None",
-                "text": "None",
-                "textHtml": "None",
-                "title": "²ÆÕş²¿ º£¹Ø×ÜÊğ Ë°Îñ×Ü¾Ö¹ØÓÚ±ßÃñ»¥ÊĞÃ³Ò×½ø³ö¿ÚÉÌÆ·²»ÓèÃâË°Çåµ¥µÄÍ¨Öª",
-                "url": "None",
-                "cover": "None",
-                "source": "None",
-                "sourceUrl": "http://gss.mof.gov.cn/gzdt/zhengcefabu/202404/t20240408_3932404.htm",
-                "extend": {
-                    "sx_date_date": "2024-04-08",
-                    "state_dictionary": "1",
-                    "type_dictionary": "1"
-                },
-                "sort": 0,
-                "attribute": {}
-            }
-        ],
-        "tags": [
-            {
-                "id": 6529064,
-                "name": "¹ØË°",
-                "searchCount": 950,
-                "sort": 5,
-                "path": "6529064",
-                "children": "None"
-            },
-            {
-                "id": 6528788,
-                "name": "³µ´¬Ë°",
-                "searchCount": 154,
-                "sort": 10,
-                "path": "6528788",
-                "children": "None"
-            },
-            {
-                "id": 6491696,
-                "name": "´¬²°¶ÖË°",
-                "searchCount": 34,
-                "sort": 16,
-                "path": "6491696",
-                "children": "None"
-            },
-            {
-                "id": 5718751,
-                "name": "´úÕ÷¹æ·Ñ",
-                "searchCount": 88,
-                "sort": 20,
-                "path": "5718751",
-                "children": "None"
-            },
-            {
-                "id": 5718749,
-                "name": "Ë°ÊÕÕ÷¹Ü",
-                "searchCount": 496,
-                "sort": 25,
-                "path": "5718749",
-                "children": "None"
-            },
-            {
-                "id": 996422,
-                "name": "½ø³ö¿ÚË°ÊÕ",
-                "searchCount": 1762,
-                "sort": 30,
-                "path": "996422",
-                "children": "None"
-            },
-            {
-                "id": 996421,
-                "name": "³ÇÊĞÎ¬»¤½¨ÉèË°",
-                "searchCount": 196,
-                "sort": 35,
-                "path": "996421",
-                "children": "None"
-            },
-            {
-                "id": 996420,
-                "name": "³ÇÕòÍÁµØÊ¹ÓÃË°",
-                "searchCount": 282,
-                "sort": 40,
-                "path": "996420",
-                "children": "None"
-            },
-            {
-                "id": 996419,
-                "name": "»·¾³±£»¤Ë°",
-                "searchCount": 16,
-                "sort": 45,
-                "path": "996419",
-                "children": "None"
-            },
-            {
-                "id": 996418,
-                "name": "ÍÁµØÔöÖµË°",
-                "searchCount": 108,
-                "sort": 50,
-                "path": "996418",
-                "children": "None"
-            },
-            {
-                "id": 996417,
-                "name": "¸ûµØÕ¼ÓÃË°",
-                "searchCount": 151,
-                "sort": 55,
-                "path": "996417",
-                "children": "None"
-            },
-            {
-                "id": 996416,
-                "name": "ÑÌÒ¶Ë°",
-                "searchCount": 10,
-                "sort": 60,
-                "path": "996416",
-                "children": "None"
-            },
-            {
-                "id": 996415,
-                "name": "³µ´¬Ê¹ÓÃË°",
-                "searchCount": 164,
-                "sort": 65,
-                "path": "996415",
-                "children": "None"
-            },
-            {
-                "id": 996414,
-                "name": "³µÁ¾¹ºÖÃË°",
-                "searchCount": 320,
-                "sort": 70,
-                "path": "996414",
-                "children": "None"
-            },
-            {
-                "id": 996413,
-                "name": "Ó¡»¨Ë°",
-                "searchCount": 371,
-                "sort": 75,
-                "path": "996413",
-                "children": "None"
-            },
-            {
-                "id": 996412,
-                "name": "×ÊÔ´Ë°",
-                "searchCount": 170,
-                "sort": 80,
-                "path": "996412",
-                "children": "None"
-            },
-            {
-                "id": 996411,
-                "name": "·¿²úË°",
-                "searchCount": 227,
-                "sort": 85,
-                "path": "996411",
-                "children": "None"
-            },
-            {
-                "id": 996410,
-                "name": "ÆõË°",
-                "searchCount": 242,
-                "sort": 90,
-                "path": "996410",
-                "children": "None"
-            },
-            {
-                "id": 996409,
-                "name": "Ïû·ÑË°",
-                "searchCount": 674,
-                "sort": 93,
-                "path": "996409",
-                "children": "None"
-            },
-            {
-                "id": 996408,
-                "name": "¸öÈËËùµÃË°",
-                "searchCount": 818,
-                "sort": 96,
-                "path": "996408",
-                "children": "None"
-            },
-            {
-                "id": 996407,
-                "name": "ÆóÒµËùµÃË°",
-                "searchCount": 2632,
-                "sort": 99,
-                "path": "996407",
-                "children": "None"
-            },
-            {
-                "id": 996406,
-                "name": "ÔöÖµË°",
-                "searchCount": 2707,
-                "sort": 100,
-                "path": "996406",
-                "children": "None"
-            }
-        ]
-    }
-}
+### åŠ¨æ€é…ç½®
+
+> æœ¬é¡¹ç›®ä½¿ç”¨ `dynaconf` æ¥å®ç°åŠ¨æ€é…ç½®
+
+æœ¬åœ°éƒ¨ç½²æ—¶, å»ºè®®ä½¿ç”¨ä½¿ç”¨æœ¬åœ°é…ç½®, æ›¿æ¢é¡¹ç›®é»˜è®¤é…ç½®,
+é…ç½®æ–¹æ³•å¦‚ä¸‹:
+
+- å¯æŒ‰ç…§ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  æ–‡ä»¶æ ¼å¼, åœ¨å…¶åŒçº§ï¼ˆå³ä¸ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  åŒçº§è·¯å¾„ï¼‰åˆ›å»º `settings.local.yml` æ–‡ä»¶
+- `settings.local.yml` æ–‡ä»¶ä¼šè‡ªåŠ¨æ›¿æ¢æ‰ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  ä¸­é»˜è®¤é…ç½®, å¹¶ä¸”ä¼šè¢« `git ignore` ä¸ä¼šè¢« git æäº¤åˆ°è¿œç¨‹ä»“åº“
+-
+
+## ä½¿ç”¨æŒ‡å—
+
+- **è¿è¡Œçˆ¬è™«å‰è¯·ç¡®è®¤ [settings.yml](..%2Fsrc%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml) é…ç½®æ–‡ä»¶çš„ `START_DATE`
+  å’Œ `END_DATE` å‚æ•°æ˜¯å¦ä¸ºæ‚¨æƒ³è¦é‡‡é›†çš„æ—¥æœŸ**
+- é»˜è®¤ `START_DATE` å’Œ `END_DATE` ä¸¤ä¸ªå‚æ•°ä¸ºç©º, å³ä¸ºä»å½“å‰æ—¥æœŸå¼€å§‹é‡‡é›†,
+  å‚æ•°è¯´æ˜å¦‚ä¸‹ï¼š
+- é’ˆå¯¹ `è´¢æ”¿éƒ¨` www.mof.gov.cn
+  çˆ¬è™«ï¼Œç”±äºä¸‰ä¸ªé¡µé¢è§£æé€»è¾‘é€šç”¨ï¼Œéœ€é€šè¿‡ [settings.yml](src%2Fcrawlers_tax_policy_data%2Fconfig%2Fsettings.yml)
+  ä¸­çš„ `MOF_URL_SUFFIX` å‚æ•°æŒ‡å®šå½“ä¸ªçˆ¬è™«è¿è¡Œ
+    - å…¶è¦æƒ³å•å•ç‹¬è¿è¡Œä¸€ä¸ªç½‘ç«™ï¼Œåˆ™éœ€æ³¨é‡Šæ‰å…¶ä»–ä¸¤ä¸ªç½‘ç«™çš„é…ç½®ï¼Œå…¨éƒ¨æ‰“å¼€æ—¶ï¼Œçˆ¬è™«ä¼šä¾æ¬¡é‡‡é›†æŒ‡å®šæ—¥æœŸèŒƒå›´å†…æ•°æ®ã€‚
+    - ```yaml
+       MOF_URL_SUFFIX:
+          è´¢æ”¿æ–‡å‘Š: "/caizhengwengao/index"  # è´¢æ”¿æ–‡å‘Š
+          è´¢æ”¿éƒ¨ä»¤: "/bulinggonggao/czbl/index"  # è´¢æ”¿éƒ¨ä»¤
+          è´¢æ”¿éƒ¨å…¬å‘Š: "/bulinggonggao/czbgg/index"  # è´¢æ”¿éƒ¨å…¬å‘Š
+    ```
+
+```yaml
+# éœ€è¦é‡‡é›†çš„æ—¥æœŸï¼Œ
+# æ³¨ï¼šæ—¥æœŸæ ¼å¼è¦æŒ‰ç…§ `å¹´æœˆæ—¥` çš„å½¢å¼ ä¾‹å¦‚ `20240409` ç¨‹åºä¸­å·²å®šä¹‰äº†å›ºå®šçš„ date è§£æé€»è¾‘
+# é”™è¯¯ç¤ºèŒƒï¼š2024-01-12ã€2024å¹´1æœˆ2æ—¥
+# è¦æƒ³æŒ‡å®šé‡‡é›†æŸå¤©å•æ—¥çš„æ•°æ®ï¼Œåˆ™åªéœ€æŒ‡å®š start_date æˆ–è€… end_date
+# start_date å’Œ end_date éƒ½è®¾ç½®ä¸ºç©ºï¼Œåˆ™è‡ªåŠ¨é‡‡é›†å½“å‰æ—¥æœŸå†…æ•°æ®
 ```
+
+```bash
+python .\src\crawlers_tax_policy_data\cmdline.py
+Usage: cmdline.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -V, --version  Show version and exit.
+  -v, --verbose  Get detailed output
+  --help         Show this message and exit.
+
+Commands:
+  crawlers-gov  æ”¿åºœç½‘ç«™çˆ¬è™«, è¯·ä½¿ç”¨ `crawlers-gov --help` è·å–è¯¦ç»†è¯´æ˜
+  run-all       é€ä¸€è¿è¡Œæ¯ä¸ªçˆ¬è™«, è¯·åœ¨é…ç½®æ–‡ä»¶ä¸­ç¡®è®¤é‡‡é›†æ—¥æœŸ! 
+
+```
+
+```bash
+Usage: cmdline.py crawlers-gov [OPTIONS]
+
+  æ”¿åºœç½‘ç«™çˆ¬è™«ï¼Œè¯·ä½¿ç”¨ `crawlers-gov --help` è·å–è¯¦ç»†è¯´æ˜
+
+  ä¸‹åˆ—æ˜¯å¯æä¾›çš„é‡‡é›†æ–¹æ¡ˆï¼š è¯·ä½¿ç”¨ -c æˆ– --city å‚æ•°æŒ‡å®šçˆ¬è™«ï¼Œ
+
+  å¹¶åœ¨ config/settings `START_DATE`å’Œ`END_DATE` ä¸­ç¡®è®¤éœ€è¦é‡‡é›†çš„æ—¥æœŸï¼Œé»˜è®¤é‡‡é›†å½“æ—¥çš„æ•°æ®
+
+  ----------------------------------------------------------------
+  gov [ä¸­å¤®äººæ°‘æ”¿åºœ](www.gov.cn)
+
+  sz-gov [æ·±åœ³æ”¿åºœåœ¨çº¿](www.sz.gov.cn)
+
+  sh-gov [ä¸Šæµ·å¸‚äººæ°‘æ”¿åºœ](www.shanghai.gov.cn)
+
+  zj-gov [æµ™æ±Ÿçœäººæ°‘æ”¿åºœ](www.zj.gov.cn)
+
+  gd-gov-latest-policy [å¹¿ä¸œçœæ”¿åºœ > æœ€æ–°æ”¿ç­–](www.gd.gov.cn/gdywdt)
+
+  gd-gov-doc-lib [å¹¿ä¸œçœæ”¿åºœ > æ–‡ä»¶åº“](www.gd.gov.cn/zwgk/wjk/qbwj/)
+
+  gz-gov [å¹¿å·å¸‚è¡Œæ”¿è§„èŒƒæ€§æ–‡ä»¶ç»Ÿä¸€å‘å¸ƒå¹³å°](www.gz.gov.cn/gfxwj/)
+
+  js-gov [æ±Ÿè‹çœäººæ°‘æ”¿åºœ](jiangsu.gov.cn)
+
+  bj-gov [åŒ—äº¬å¸‚äººæ°‘æ”¿åºœ](beijing.gov.cn)
+
+  sc-gov [å››å·çœäººæ°‘æ”¿åºœ](sc.gov.cn)
+
+  safe [å›½å®¶å¤–æ±‡ç®¡ç†å±€](safe.gov.cn)
+
+  mof [è´¢æ”¿éƒ¨ è´¢æ”¿æ–‡å‘Š;è´¢æ”¿éƒ¨ä»¤;è´¢æ”¿éƒ¨å…¬å‘Š](mof.gov.cn)
+  
+  csrc [è¯ç›‘ä¼š](www.csrc.gov.cn)
+
+  miit [å·¥ä¸šå’Œä¿¡æ¯åŒ–éƒ¨](www.miit.gov.cn)
+
+  pbc [ä¸­å›½äººæ°‘é“¶è¡Œ](www.pbc.gov.cn)
+
+  ndrc [å›½å®¶å‘æ”¹å§”](www.ndrc.gov.cn)
+  
+  cbirc [é“¶ä¿ç›‘ä¼š](www.cbirc.gov.cn)
+
+  samr [å¸‚åœºç›‘ç£ç®¡ç†æ€»å±€](www.samr.gov.cn)
+  
+  nmpa [å›½å®¶è¯ç›‘å±€](www.nmpa.gov.cn)
+
+  shui5 [ç¨å±‹](www.shui5.cn)
+
+  ----------------------------------------------------------------
+
+Options:
+  -c, --city TEXT  é€‰æ‹©è¦é‡‡é›†çš„ç½‘ç«™  [default: gov]
+  --help           Show this message and exit.
+```
+
+ä¾‹å¦‚:
+
+```bash
+# é‡‡é›† [ä¸­å¤®äººæ°‘æ”¿åºœ](www.gov.cn/zhengce/xxgk/) ç½‘ç«™æ•°æ®
+python .\src\crawlers_tax_policy_data\cmdline.py crawlers-gov -c gov
+# é€ä¸€è¿è¡Œæ¯ä¸ªçˆ¬è™«
+python .\src\crawlers_tax_policy_data\cmdline.py run-all
+```
+
+## å·²æä¾›çš„çˆ¬è™«ç½‘ç«™
+
+- çˆ¬è™«ç®¡ç†å™¨ï¼š[manage.py](src%2Fcrawlers_tax_policy_data%2Fmanage.py)
+
+| Alias                | Spider Class                                                                                                              | Description                                                                          |
+|:---------------------|:--------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------|
+| gov                  | GovSpider               <br/>   [gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fgov.py)                                | ä¸­å¤®äººæ°‘æ”¿åºœ                                                                               |
+| sz-gov               | ShenZhengSpider         <br/>[shenzhen.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fshenzhen.py)                         | æ·±åœ³å¸‚äººæ°‘æ”¿åºœ                                                                              |
+| sh-gov               | ShangHaiGovSpider       <br/>[shanghai_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fshanghai_gov.py)                 | ä¸Šæµ·å¸‚äººæ°‘æ”¿åºœ                                                                              |
+| zj-gov               | ZJSpider                <br/>[zhejiang_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fzhejiang_gov.py)                 | æµ™æ±Ÿçœäººæ°‘æ”¿åºœ                                                                              |
+| gd-gov-latest-policy | GdGovLatestPolicySpider <br/>[gd_gov_latest_policy.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fgd_gov_latest_policy.py) | å¹¿ä¸œçœäººæ°‘æ”¿åºœ  æ–‡ä»¶åº“                                                                         |
+| gd-gov-doc-lib       | GdGovDocLibSpider       <br/>[gd_gov_doc_lib.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fgd_gov_doc_lib.py)             | å¹¿ä¸œçœäººæ°‘æ”¿åºœ æœ€æ–°æ”¿ç­–                                                                         |
+| gz-gov               | GzGovSpider             <br/>[gz_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fgz_gov.py)                             | å¹¿å·å¸‚äººæ°‘æ”¿åºœ                                                                              |
+| js-gov               | JsGovSpider             <br/>[js_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fjs_gov.py)                             | æ±Ÿè‹çœäººæ°‘æ”¿åºœ                                                                              |
+| bj-gov               | BjGovSpider             <br/>[bj_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fbj_gov.py)                             | åŒ—äº¬å¸‚äººæ°‘æ”¿åºœ                                                                              |
+| sc-gov               | ScGovSpider             <br/> [sc_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsc_gov.py)                            | å››å·çœäººæ°‘æ”¿åºœ <br/>`gfxwj`, `newzfwj`, `bmgfxwj` ä¸‰ä¸ªç½‘å€çš„çˆ¬è™«ï¼Œè¯·åœ¨ settings.yml é…ç½®æ–‡ä»¶ä¸­ SC_GOV å‚æ•°ç¡®è®¤ |
+| safe                 | SafeSpider              <br/>[safe_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsafe_gov.py)                         | å›½å®¶å¤–æ±‡ç®¡ç†å±€                                                                              |
+| mof                  | MofSpider               <br/>[safe_gov.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsafe_gov.py)                         | è´¢æ”¿éƒ¨                                                                                  |
+| csrc                 | CsrcSpider              <br/>[csrc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fcsrc.py)                                 | è¯ç›‘ä¼š                                                                                  |
+| miit                 | MiitSpider              <br/>[miit.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fmiit.py)                                 | å·¥ä¸šå’Œä¿¡æ¯åŒ–éƒ¨                                                                              |
+| pbc                  | PbcSpider               <br/>[pbc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fpbc.py)                                   | ä¸­å›½äººæ°‘é“¶è¡Œ                                                                               |
+| ndrc                 | NdrcSpider              <br/>[ndrc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fndrc.py)                                 | å›½å®¶å‘æ”¹å§”                                                                                |
+| cbirc                | CbircSpider<br/>  [cbirc.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fcbirc.py)                                          | é“¶ä¿ç›‘ä¼š                                                                                 |
+| samr                 | SamrSpider<br/>[samr.py](src%2Fcrawlers_tax_policy_data%2Fspider%2Fsamr.py)                                               | å¸‚åœºç›‘ç£ç®¡ç†æ€»å±€                                                                             |

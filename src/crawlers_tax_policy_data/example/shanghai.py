@@ -1,8 +1,13 @@
-import time, sys, os, re, csv
-import requests
 import configparser
-from bs4 import BeautifulSoup
+import csv
+import os
+import re
+import sys
+import time
+
+import requests
 import urllib3
+from bs4 import BeautifulSoup
 
 # from requests.packages.urllib3.exceptions import InsecureRequestWarning
 

@@ -1,13 +1,41 @@
 # log
-LOG_PATH: '/tmp/atom'
+LOG_PATH: '/crawlers'
 LOGLEVEL: INFO
 
-# 商品信息存储位置
-MONGODB_URL: mongodb://127.0.0.1:27017/
-MONGODB_NAME: 'customs_data'
+# 浏览器无头模式,
+HEADLESS: True
 
-REDIS_URL: redis://127.0.0.1:6379/0
+# [中央人民政府](www.gov.cn/zhengce/xxgk/) 网站数据保存路径
+GOV_OUTPUT_PAHT: "/crawlers"
 
-HEADLESS: False
+# 需要采集的日期，
+# 注：日期格式要按照 `年月日` 的形式 例如 `20240409` 程序中已定义了固定的 date 解析逻辑
+# 错误示范：2024-01-12、2024年1月2日
+# 要想指定采集某天单日的数据，则只需指定 start_date 或者 end_date
+# start_date 和 end_date 都设置为空，则自动采集当前日期内数据
+START_DATE: ''
+END_DATE: ''
 
-GOV_OUTPUT_PAHT: "/foo"
+# 财政部 爬虫配置
+MOF_URL_SUFFIX:
+  财政文告: "/caizhengwengao/index"  # 财政文告
+  财政部令: "/bulinggonggao/czbl/index"  # 财政部令
+  财政部公告: "/bulinggonggao/czbgg/index"  # 财政部公告
+
+# 四川省人民政府 爬虫配置
+# gfxwj   https://www.sc.gov.cn/10462/c102914/gfxwj.shtml	     政府规范性文件
+# newzfwj https://www.sc.gov.cn/10462/c103041/newzfwj.shtml        省政府政策文件
+# bmgfxwj https://www.sc.gov.cn/10462/c111304/bmgfxwj.shtml?lion=1 政府信息公开
+SC_GOV:
+  - "gfxwj"
+  - "newzfwj"
+  - "bmgfxwj"
+
+NDRC_SPIDER:
+  - "fzggwl"
+  - "ghxwj"
+  - "gg"
+
+CBIRC_SPIDER:
+  - "asd"
+  - "of"
