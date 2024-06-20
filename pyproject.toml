@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "crawlers-tax-policy-data"
-version = "0.1.0"
+version = "1.0.0"
 description = "Get the specified field data of public announcements in the government affairs platform"
 authors = ["Terry <17601306065@163.com>"]
 readme = "README.md"
